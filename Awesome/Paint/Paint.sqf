@@ -73,6 +73,26 @@ private ["_h", "_n"];
 	];
 	
 	
+	// Initialize paint shop variables
+	if (isNil "ps_1_s") then {ps_1_s = objNull};
+	if (isNil "ps_1_flag1") then {ps_1_flag1 = objNull};
+	if (isNil "ps_1_flag2") then {ps_1_flag2 = objNull};
+	if (isNil "ps_2_s") then {ps_2_s = objNull};
+	if (isNil "ps_2_flag1") then {ps_2_flag1 = objNull};
+	if (isNil "ps_2_flag2") then {ps_2_flag2 = objNull};
+	if (isNil "ps_3_s") then {ps_3_s = objNull};
+	if (isNil "ps_3_flag1") then {ps_3_flag1 = objNull};
+	if (isNil "ps_3_flag2") then {ps_3_flag2 = objNull};
+	if (isNil "ps_4_s") then {ps_4_s = objNull};
+	if (isNil "ps_4_flag1") then {ps_4_flag1 = objNull};
+	if (isNil "ps_4_flag2") then {ps_4_flag2 = objNull};
+	if (isNil "ps_5_s") then {ps_5_s = objNull};
+	if (isNil "ps_5_flag1") then {ps_5_flag1 = objNull};
+	if (isNil "ps_5_flag2") then {ps_5_flag2 = objNull};
+	if (isNil "ps_6_s") then {ps_6_s = objNull};
+	if (isNil "ps_6_flag1") then {ps_6_flag1 = objNull};
+	if (isNil "ps_6_flag2") then {ps_6_flag2 = objNull};
+
 	Paint_Shops =
 	[
 		// Shop spawn, flag1, flag2

@@ -31,8 +31,6 @@ shop_close =  {
 	
 	_shop_cache = [_shop_id] call shop_lookup;
 	if (isNil "_shop_cache") exitWith {};
-
-	_indicator = _shop_cache getVariable "indicator";
 	
 	if (isNil "_indicator") then {
 		private ["_pos", "_indicator", "_model_pos", "_center", "_max_z"];
@@ -41,6 +39,8 @@ shop_close =  {
 		_max_z = ((boundingBox _shop_cache) select 1) select 2;
 		_indicator attachTo [_shop_cache, [0,0,_max_z+0.1]];
 	};
+	
+	_indicator = _shop_cache getVariable "indicator";
 	
 	_indicator hideObject false;
 	_shop_cache setVariable ["open", false];

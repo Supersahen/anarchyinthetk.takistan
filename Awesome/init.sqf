@@ -104,7 +104,9 @@ M_ill_decent = 0.0075;
 
 pmc_shop_list = [pmccar, pmcair, pmcbox, fortshop2, "pmc_license_journeyman", "pmc_license_defense", "pmc_license_air"];
 
-pmc_skin_list = [];
+// Initialize PMC skin list variables
+if (isNil "CSL_PMC_1") then {CSL_PMC_1 = []};
+if (isNil "pmc_skin_list") then {pmc_skin_list = []};
 
 {
 	_array = [_x] call C_array_d;

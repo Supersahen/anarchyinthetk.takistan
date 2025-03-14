@@ -1,3 +1,7 @@
+if (isNil "stats_init_variable") then {
+    waitUntil {!isNil "stats_init_variable"};
+};
+
 ["INV_Fabrikowner", []] call stats_init_variable;
 
 INV_FarmItemArray =

@@ -9,8 +9,6 @@ _handler = [] execVM "createfunctions.sqf";
 waitUntil {scriptDone _handler};
 _handler = [] execVM "carparks.sqf";
 waitUntil {scriptDone _handler};
-_handler = [] execVM "masterarray.sqf";
-waitUntil {scriptDone _handler};
 _handler = [] execVM "Awesome\Scripts\optimize_2.sqf";
 waitUntil {scriptDone _handler};
 _handler = [] execVM "Awesome\Scripts\shops.sqf";

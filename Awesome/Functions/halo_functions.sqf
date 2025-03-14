@@ -1,6 +1,19 @@
 if (!isNil "halo_functions_defined") exitWith {};
 //player groupchat "defining halo functions!";
 
+// Initialize post-processing effects
+if (isNil "halo_ppRadialBlur") then {
+    halo_ppRadialBlur = ppEffectCreate ["RadialBlur", 464];
+    if (halo_ppRadialBlur != -1) then {
+        halo_ppRadialBlur ppEffectEnable true;
+    };
+};
+if (isNil "halo_DynamicBlur") then {
+    halo_DynamicBlur = ppEffectCreate ["DynamicBlur", 464];
+    if (halo_DynamicBlur != -1) then {
+        halo_DynamicBlur ppEffectEnable true;
+    };
+};
 
 halo_jump = {
 	//player groupchat "halo jump with delay!";

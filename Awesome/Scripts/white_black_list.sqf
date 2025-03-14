@@ -456,6 +456,8 @@ A_WBL_F_LOAD_S = {
 				
 			_array = call compile _text;
 			
+			if (isNil "_array") then {_array = []};
+			
 			missionNamespace setVariable [_variable, []];
 			missionNamespace setVariable [_pv_s, []];
 			missionNamespace setVariable [_pv_c, []];

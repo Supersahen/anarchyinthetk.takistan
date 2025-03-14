@@ -1,6 +1,7 @@
 #include "constants.h"
 #include "ASCII.h"
 
+diag_log "Taki Life Init - My Stats Functions Loading";
 stats_use_factions = false;
 stats_server_uid = "__SERVER__";
 
@@ -11,25 +12,25 @@ stats_load_request_response_variable = 1;
 
 stats_load_request_receive = {
 	private["_variable", "_request"];
-	
+
 	_variable = _this select 0;
 	_request = _this select 1;
-	
+
 	//player groupChat format["LOAD_REQUEST_RECV: %1", _request];
-	
+
 	if (isNil "_request") exitWith {};
 	if (typeName _request != "ARRAY") exitWith {};
-	
+
 	private["_uid", "_response_variable"];
 	_uid = _request select stats_load_request_uid;
 	_response_variable = _request select stats_load_request_response_variable;
-	
-	
+
+
 	if (isNil "_uid") exitWith {};
 	if (typeName _uid != "STRING") exitWith {};
 	if (isNil "_response_variable") exitWith {};
 	if (typeName _response_variable != "STRING") exitWith {};
-	
+
 	private["_data"];
 	_data = [_uid] call getAllPlayerVariables;
 	server setVariable[_response_variable, _data, true];
@@ -37,17 +38,17 @@ stats_load_request_receive = {
 
 stats_build_load_request = {
 	private["_uid"];
-	
+
 	_uid = _this select 0;
 	if (isNil "_uid") exitWith {nil};
 	if (typeName _uid != "STRING") exitWith {nil};
-	
+
 	private["_response_variable"];
 	_response_variable = _uid;
 	server setVariable [_response_variable, nil, true];
-	
+
 	private["_request"];
-	
+
 	_request = [];
 	_request set [stats_load_request_uid, _uid];
 	_request set [stats_load_request_response_variable, _response_variable];
@@ -57,15 +58,15 @@ stats_build_load_request = {
 
 stats_load_request_send = {
 	private["_uid", "_request", "_response_variable"];
-	
+
 	_uid = _this select 0;
 	_request = [_uid] call stats_build_load_request;
 	if (isNil "_request") exitWith {[]};
-	
+
 	private["_response_variable"];
 	_response_variable = _request select stats_load_request_response_variable;
 	server setVariable [_response_variable, nil, true];
-	
+
 	if (isServer) then {
 		//on the server we can call the receive function directly
 		["", _request] call stats_load_request_receive;
@@ -75,22 +76,30 @@ stats_load_request_send = {
 		stats_load_request_buffer = _request;
 		publicVariableServer "stats_load_request_buffer";
 	};
-	
+
 	//wait for the response
-	private["_data"];
-	
+	private["_data", "_complete"];
+
 	_data = [];
-	private["_complete"];
 	_complete =  false;
-	while {true} do {  
-		_data = server getVariable _response_variable;
+	while {true} do {
+
+/*		_data = server getVariable _response_variable;
 		_complete = true;
 		_complete = if (isNil "_data") then {false} else {_complete};
 		_complete = if (typeName _data != "ARRAY") then {false} else { _complete };
+*/
+		if !(isNil {server getVariable _response_variable}) then {
+				if ( (typeName (server getVariable _response_variable)) == "ARRAY" ) then {
+						_data = server getVariable _response_variable;
+						_complete = true;
+					};
+			};
+
 		if (_complete) exitWith {};
 		uiSleep 0.1;
 	};
-	
+
 	_data
 };
 
@@ -100,44 +109,44 @@ stats_save_request_value = 2;
 
 stats_save_request_receive = {
 	private["_variable", "_request"];
-	
+
 	_variable = _this select 0;
 	_request = _this select 1;
-	
+
 	if (isNil "_request") exitWith {};
 	if (typeName _request != "ARRAY") exitWith {};
-	
+
 	private["_uid", "_key", "_value"];
 	_uid = _request select stats_save_request_uid;
 	_key = _request select stats_save_request_key;
 	_value = _request select stats_save_request_value;
-	
-	
+
+
 	if (isNil "_uid") exitWith {};
 	if (isNil "_key") exitWith {};
 	if (isNil "_value") exitWith {};
 	if (typeName _uid != "STRING") exitWith {};
 	if (typeName _key != "STRING") exitWith {};
-	
+
 	_value = [_value];
 	[_uid, _key, _value] call updatePlayerVariable;
 };
 
 stats_build_save_request = {
 	private["_uid", "_variable", "_value"];
-	
+
 	_uid = _this select 0;
 	_variable = _this select 1;
 	_value = _this select 2;
-	
+
 	if (isNil "_uid") exitWith {nil};
 	if (isNil "_variable") exitWith {nil};
 	if (isNil "_value") exitWith {nil};
-	
+
 	if (typeName _uid != "STRING") exitWith{nil};
 	if (_uid == "") exitWith {};
 	if (typeName _variable != "STRING") exitWith {nil};
-	
+
 	private["_request"];
 
 	_request = [];
@@ -151,7 +160,7 @@ stats_save_request_send = {
 	_request = _this call stats_build_save_request;
 	if (isNil "_request") exitWith {};
 
-	
+
 	if (isServer) then {
 		// if we are on server, we can call the receive method directly
 		["", _request] call stats_save_request_receive;
@@ -169,18 +178,20 @@ stats_human_side = {
 	if (isNil "_player") exitWith {sideUnknown};
 	if (typeName _player != "OBJECT") exitWith {sideUnknown};
 	if (isNull _player) exitWith {sideUnknown};
-	
+
 	private["_player_str", "_data", "_ch1", "_ch2"];
 	_player_str = toUpper(str(_player));
 	_data = toArray _player_str;
+	_ch0 = (_data select 0);
 	_ch1 = (_data select 1);
 	_ch2 = (_data select 2);
-	
+
 	if (_ch1 == ASCII_P && _ch2 == ASCII_F) exitWith { east};
 	if (_ch1 == ASCII_I && _ch2 == ASCII_V) exitWith { civilian };
 	if (_ch1 == ASCII_N && _ch2 == ASCII_S) exitWith { resistance };
 	if (_ch1 == ASCII_O && _ch2 == ASCII_P) exitWith { west };
-	
+	if (_ch1 == ASCII_S && _ch2 == ASCII_U) exitWith { civilian };
+
 	 sideUnknown
 };
 
@@ -189,7 +200,8 @@ stats_get_faction = {
 	private ["_player"];
 	_player = _this select 0;
 	private["_side"];
-	_side = [_player] call player_human_side;
+	//_side = [_player] call player_human_side;
+	_side = side player;
 	if (_side == east) exitWith {"Opfor"};
 	if (_side == west) exitWith {"Cop"};
 	if (_side == civilian) exitWith {"Civilian"};
@@ -197,35 +209,31 @@ stats_get_faction = {
 	""
 };
 
-
-
-
-
 stats_get_uid = {
 	private["_object"];
 	_object = _this select 0;
-	
+
 	_uid = _object getVariable "stats_uid";
 	if (not(isNil "_uid")) exitWith {_uid};
-	
+
 	if (not(_object isKindOf "Man")) exitWith {
 		([_object] call starts_get_vehicle_uid)
 	};
-	
+
 	([_object] call stats_get_player_uid)
 };
 
 starts_get_vehicle_uid = {
 	private["_object"];
-	
+
 	_object = _this select 0;
 	if (isNil "_object") exitWith {""};
-	
+
 	private["_uid"];
 	_uid = vehicleVarName _object;
 	if (isNil "_uid") exitWith {""};
 	if (typeName _uid != "STRING") exitWith {};
-	
+
 	_object setVariable ["stats_uid", _uid, true];
 	(_uid)
 };
@@ -233,23 +241,23 @@ starts_get_vehicle_uid = {
 stats_get_player_uid = {
 	private["_player", "_uid"];
 	_player = _this select 0;
-	
+
 	_uid = _player getVariable "stats_uid";
 	if (not(isNil "_uid")) exitWith {_uid};
-	
+
 	_uid = getPlayerUID _player;
 	if (isNil "_uid") exitWith {""};
 	if (typeName _uid != "STRING") exitWith {""};
 	if (_uid == "") exitWith {""};
-	
+
 	_player setVariable ["real_uid", _uid, true];
 	_player setVariable ["name", (name _player), true];
-	
+
 	private["_faction"];
 	_faction = [_player] call stats_get_faction;
-	_uid = if (stats_use_factions) then { _uid + " " + _faction } else { _uid};
+	_uid = if (stats_use_factions) then { _uid + "_" + _faction } else {_uid};
 	_player setVariable ["stats_uid", _uid, true];
-	_uid	
+	_uid
 };
 
 //generic method for saving variables, can be called either from server or client
@@ -262,27 +270,33 @@ stats_save = {
 //Arguments are [key,value]
 stats_server_save = {
 	private["_variable", "_value"];
-	
+
 	_variable = _this select 0;
 	_value = _this select 1;
-	
+
 	if (isNil "_variable") exitWith {};
 	if (isNil "_value") exitWith {};
 	if (typeName _variable != "STRING") exitWith {};
-	
+
 	private["_uid"];
 	[stats_server_uid, _variable, _value] call stats_save;
 };
 
 //Method intended to be run on client-side, for saving CLIENT specific variables
 stats_client_save = {
-	private["_variable", "_value"];
+	if (isNil "RG_fnc_iSave") then {
+		diag_log "ERROR: RG_fnc_iSave function not found!";
+		exitWith {};
+	};
 	
-	_variable = _this select 0;
-	_value = _this select 1;
+	if (isNil "statsLoaded" || statsLoaded != 1) then {
+		diag_log "ERROR: Stats not loaded yet!";
+		statsLoaded = 0;
+		stats_loaded = false;
+		exitWith {};
+	};
 	
-	[player, _variable, _value] call stats_player_save;
-	true
+	["all"] call RG_fnc_iSave;
 };
 
 
@@ -292,15 +306,15 @@ stats_player_save = {
 	_player = _this select 0;
 	_variable = _this select 1;
 	_value = _this select 2;
-	
+
 	private["_uid"];
 	_uid = [_player] call stats_get_uid;
 	if (_uid == "") exitWith {};
-	
+
 	if (isNil "_variable") exitWith {};
 	if (isNil "_value") exitWith {};
 	if (typeName _variable != "STRING") exitWith {};
-		
+
 	[_uid, _variable, _value] call stats_save;
 };
 
@@ -311,49 +325,48 @@ stats_vehicle_save = {
 	_vehicle = _this select 0;
 	_variable = _this select 1;
 	_value = _this select 2;
-	
+
 	private["_uid"];
 	_uid = [_vehicle] call stats_get_uid;
-	
+
 	if (_uid == "") exitWith {};
-	
+
 	if (isNil "_variable") exitWith {};
 	if (isNil "_value") exitWith {};
 	if (typeName _variable != "STRING") exitWith {};
-		
+
 	[_uid, _variable, _value] call stats_save;
 };
 
 
 stats_server_player_disconnected = {
 	private["_id", "_name", "_uid"];
-	_id = _this select 0; 
-	_name = _this select 1; 
-	_uid  = _this select 2; 
-	
+	_id = _this select 0;
+	_name = _this select 1;
+	_uid  = _this select 2;
+
 	if (isNil "_uid") exitWith {};
 	if (typeName _uid != "STRING") exitWith {};
 	if (_uid == "") exitWith {};
-	
-	private["_player"]; 
+
+	private["_player"];
 	_player = [_name] call player_lookup_name;
-	
-	diag_log format["%1,%2,%3 - Disconnected!", _player, _name, _uid];
-	
+
+	diag_log format["%1,%2,%3 - Disconnected!", _player, _name];
+
 	[_player] call player_save_side_gear;
 	[_player] call player_save_side_inventory;
 	[_player] call player_save_side_position;
 	[_player] call player_save_side_damage;
 	[_player] call player_save_side_vehicle;
-	[_player] call gang_player_disconnected;
-	
+
 	private["_vehicle"];
 	_vehicle = (vehicle _player);
 	if (not(_vehicle == _player)) then {
 		[_vehicle] call vehicle_save_stats;
 		[_vehicle] call vehicle_start_track;
 	};
-		
+
 	private["_stats_uid"];
 	_stats_uid =  [_player] call stats_get_uid;
 	[_stats_uid] call unloadPlayerVariables;
@@ -365,34 +378,34 @@ stats_load_core_libraries = {
 
 	_h = [] execVM "Awesome\Functions\vehicle_functions.sqf";
 	waitUntil {scriptDone _h};
-	
+
 	_h = [] execVM "Awesome\Functions\player_functions.sqf";
 	waitUntil {scriptDone _h};
-	
+
 	_h = [] execVM "Awesome\Clothes\Clothes.sqf";
 	waitUntil {scriptDone _h};
 };
 
 stats_server_setup = {
 	onPlayerDisconnected { [_id, _name, _uid] call stats_server_player_disconnected };
-	
-	//setup event listener for players trying to load their stats	
-		
+
+	//setup event listener for players trying to load their stats
+
 	stats_load_request_buffer =  " ";
 	publicVariableServer "stats_load_request_buffer";
 	"stats_load_request_buffer" addPublicVariableEventHandler { _this call stats_load_request_receive;};
-	
+
 	//setup event lister for players trying to save their stats
 	stats_save_buffer = " ";
 	publicVariableServer "stats_save_request_buffer";
 	"stats_save_request_buffer" addPublicVariableEventhandler { _this call stats_save_request_receive; };
-	
+
 	//load the SERVER's own variables
 	private["_data"];
 	_data = [stats_server_uid] call stats_load_request_send;
 	[_data, server] call stats_compile_sequential;
-	
-	
+
+
 	//keep a count of how many times the server has restarted
 	private["_restart_count"];
 	_restart_count = server getVariable "restart_count";
@@ -401,9 +414,9 @@ stats_server_setup = {
 	_restart_count = _restart_count + 1;
 	server setVariable ["restart_count", _restart_count, true];
 	["restart_count", _restart_count] call stats_server_save;
-	
+
 	call stats_load_core_libraries;
-	
+
 
 	server setVariable ["stats_server_setup_complete", true, true];
 };
@@ -411,7 +424,7 @@ stats_server_setup = {
 
 stats_client_server_setup_wait = {
 	private["_complete"];
-	
+
 	while {true} do {
 		_complete = server getVariable "stats_server_setup_complete";
 		_complete = if (isNil "_complete") then {false} else { _complete};
@@ -422,61 +435,43 @@ stats_client_server_setup_wait = {
 	_complete
 };
 
-stats_compile_loading = {
-	private["_data", "_object"];
-	_data = _this select 0;
-	_object = _this select 1;
-	[_data, _object, true, true] call stats_compile;
-};
-
 stats_compile_sequential = {
-	private["_data", "_object"];
+	private["_data", "_object", "_sequential"];
 	_data = _this select 0;
 	_object = _this select 1;
-	[_data, _object, true, false] call stats_compile;
+	[_data, _object, true] call stats_compile;
 };
 
 stats_compile_parallel = {
-	private["_data", "_object"];
+	private["_data", "_object", "_sequential"];
 	_data = _this select 0;
 	_object = _this select 1;
-	[_data, _object, false, false] call stats_compile;
+	[_data, _object, false] call stats_compile;
 };
 
 stats_compile = {
-	private["_data", "_object", "_sequential", "_loading"];
+	private["_data", "_object", "_sequential"];
 	_data = _this select 0;
 	_object = _this select 1;
 	_sequential = _this select 2;
-	_loading = _this select 3;
-	
+
 	if (isNil "_data") exitWith {};
 	if (typeName _data != "ARRAY") exitWith {};
-	
+
 	if (isNil "_object") exitWith {};
 	if (typeName _object != "OBJECT") exitWith {};
-	
+
 	if (isNil "_sequential") exitWith {};
 	if (typeName _sequential != "BOOL") exitWith {};
-	
-	if (isNil "_loading") exitWith {};
-	if (typeName _loading != "BOOL") exitWith {};
-	
-	
+
 	private["_i", "_count"];
-	
+
 	_count = count _data;
 	_i = 0;
 	while { _i < _count } do {
 		private["_entry"];
 		_entry = _data select _i;
-		
 		[_entry, _object] spawn stats_compile_entry;
-		
-		if (_loading) then {
-			[format["Initializing %1/%2 client stats ... ", (_i + 1), (count _data)]] call stats_client_update_loading_title;
-		};
-		
 		if (_sequential) then {
 			//uses a time-out approach as opposed to just "CALLING" stats_compile_entry
 			//this is so that compilation errors of a single stat entry do not affect compliation
@@ -493,7 +488,7 @@ stats_wait_entry = {
 	_entry = _this select 0;
 	_object = _this select 1;
 	_timeout = _this select 2;
-	
+
 	if (isNil "_entry") exitWith {};
 	if (typeName _entry !="ARRAY") exitWith {};
 	if (isNil "_object") exitWith {};
@@ -501,12 +496,12 @@ stats_wait_entry = {
 	if (isNull _object) exitWith {};
 	if (isNil "_timeout") exitWith {};
 	if (typeName _timeout != "SCALAR") exitWith {};
-	
+
 	private["_end_time"];
 	_end_time = serverTime + 1;
 	private["_variable_name"];
 	_variable_name = _entry select 0;
-	
+
 	while {true} do {
 		private["_variable_value"];
 		_variable_value = _object getVariable _variable_name;
@@ -524,15 +519,15 @@ stats_update_variables_list = {
 	private["_object", "_variable_name"];
 	_object = _this select 0;
 	_variable_name = _this select 1;
-	
+
 	if (isNil "_object") exitWith {};
 	if (typeName _object != "OBJECT") exitWith {};
 	if (isNil "_variable_name") exitWith{};
 	if (typeName _variable_name != "STRING") exitWith {};
-	
+
 	private["_variables_list"];
 	_variables_list = [_object] call stats_get_variables_list;
-	
+
 	if (not(_variable_name in _variables_list)) then {
 		_variables_list = _variables_list + [_variable_name];
 		[_object, _variables_list] call stats_set_variables_list;
@@ -543,7 +538,7 @@ stats_set_variables_list = {
 	private["_object", "_variables_list"];
 	_object = _this select  0;
 	_variables_list = _this select 1;
-	
+
 	if (isNil "_object") exitWith {};
 	if (typeName _object != "OBJECT") exitWith {};
 	if (isNil "_variables_list") exitWith {};
@@ -557,24 +552,24 @@ stats_get_variables_list = {
 	_player = _this select 0;
 	if (isNil "_player") exitWith {};
 	if (typeName _player != "OBJECT") exitWith {};
-	
+
 	private["_variables_list"];
 	_variables_list = _player getVariable "stats_variables_list";
 	_variables_list = if (isNil "_variables_list") then {[]} else {_variables_list};
 	_variables_list = if (typeName _variables_list != "ARRAY") then {[]} else {_variables_list};
-	_variables_list	
+	_variables_list
 };
 
 stats_copy_variables = {
 	private["_old_player", "_new_player"];
 	_old_player = _this select 0;
 	_new_player = _this select 1;
-	
+
 	if (isNil "_old_player") exitWith {};
 	if (typeName _old_player != "OBJECT") exitWith {};
 	if (isNil "_new_player") exitWith {};
 	if (typeName _new_player != "OBJECT") exitWith {};
-	
+
 	private["_variables_list"];
 	_variables_list = [_old_player] call stats_get_variables_list;
 
@@ -582,50 +577,53 @@ stats_copy_variables = {
 		private["_variable_name", "_variable_value"];
 		_variable_name = _x;
 		_variable_value = _old_player getVariable _variable_name;
-		_new_player setVariable [_variable_name, _variable_value, true];
+		if !(isNil "_variable_value") then {
+			_new_player setVariable [_variable_name, _variable_value, true];
+		};
 	} forEach _variables_list;
-	
+
 	[_new_player, _variables_list] call stats_set_variables_list;
 };
 
 
 stats_compile_entry = {
 	private["_entry", "_object"];
-	
+
 	_entry = _this select 0;
 	_object = _this select 1;
-	
+
 	if (isNil "_entry") exitWith {};
 	if (typeName _entry != "ARRAY") exitWith {};
 	if (count _entry != 2) exitWith {};
-	
+
 	if (isNil "_object") exitWith {};
 	if (typeName _object != "OBJECT") exitWith {};
-	
+
 	private["_name", "_value"];
-	
+
 	_name = _entry select 0;
 	_value = _entry select 1;
 	_value = (call compile _value) select 0;
-	
+
 	[_object, _name, _value] call stats_init_entry;
+	[_object, _name] call stats_update_variables_list;
 };
 
 
 
 stats_init_entry = {
 	private["_object", "_variable", "_value"];
-	
+
 	_object = _this select 0;
 	_variable = _this select 1;
 	_value = _this select 2;
-	
+
 	if (isNil "_object") exitWith {};
 	if (typeName _object != "OBJECT") exitWith {};
 	if (isNil "_variable") exitWith {};
 	if (typeName _variable != "STRING") exitWith {};
 
-	
+
 	//check if it already has a value
 	if ((_object == player) || (_object == server)) then {
 		private["_current_value"];
@@ -638,8 +636,6 @@ stats_init_entry = {
 	else {
 		_object setVariable [_variable, _value, true];
 	};
-	
-	[_object, _variable] call stats_update_variables_list;
 };
 
 
@@ -662,11 +658,11 @@ stats_client_stop_loading = {
 
 stats_client_update_loading_title = {
 	private["_title"];
-	
+
 	_title = _this select 0;
 	if (isNil "_title") exitWith {};
 	if (typeName _title != "STRING") exitWith {};
-	
+
 	startLoadingScreen[_title , "customLoadingScreen"];
 	[stats_loading_progress] call stats_client_update_loading_progress;
 };
@@ -674,20 +670,21 @@ stats_client_update_loading_title = {
 
 stats_client_update_loading_progress = {
 	private["_progress"];
-	
+
 	_progress = _this select 0;
-	
+
 	if (isNil "_progress") exitWith{};
 	if (typeName _progress != "SCALAR") exitWith {};
 	if (_progress < 0 || _progress > 1) exitWith {};
-	
+
 	stats_loading_progress = _progress;
 	progressLoadingScreen _progress;
+	uiSleep 1;
 };
 
 
 stats_get_mission_variable = {
-	private["_variableName"]; 
+	private["_variableName"];
 	_variableName = _this select 0;
 	if (isNil "_variableName") exitWith {nil};
 	if (typeName _variableName != "STRING") exitWith {nil};
@@ -698,11 +695,11 @@ stats_get_mission_variable = {
 };
 
 stats_server_wipe_player_data = {
-	private["_player_variable"]; 
+	private["_player_variable"];
 	_player_variable = _this select 0;
 	_player = [_player_variable] call stats_get_mission_variable;
 	if (isNil "_player") exitWith {};
-	
+
 	private["_uid"];
 	_uid = [_player] call stats_get_uid;
 	if (isNil "_uid") exitWith {};
@@ -715,60 +712,65 @@ stats_server_wipe_all_data = {
 
 stats_client_wait_uid = {
 	private["_uid"];
-	
+
 	//work-around cannot do waitUtil in preloading screen
 	while {true} do {
 		_uid = [player] call stats_get_uid;
 		if (_uid != "") exitWith {};
 		uiSleep 0.1;
 	};
-	
+
 	_uid
 };
 
 
 stats_client_setup = {
-	call stats_client_start_loading;
-	["Waiting for server initialization ... "] call stats_client_update_loading_title;
-	[0.2] call stats_client_update_loading_progress;
-	call stats_client_server_setup_wait;
-	uiSleep 1;
-	
-	["Waiting for player uid ... "] call stats_client_update_loading_title;
-	[0.4] call stats_client_update_loading_progress;
-	uiSleep 1;
-	
-	private["_uid"];
+	//call stats_client_start_loading;
+	//["Waiting for server initialization ... "] call stats_client_update_loading_title;
+	//[0.2] call stats_client_update_loading_progress;
+	//[] call stats_client_server_setup_wait;
+	//[] call music_play_random;
+	//uiSleep 1;
+
+	//["Waiting for player uid ... "] call stats_client_update_loading_title;
+	//[0.4] call stats_client_update_loading_progress;
+	//uiSleep 1;
+
+	//private["_uid"];
 	_uid = call stats_client_wait_uid;
-	
-	["Fetching client stats from server ... "] call stats_client_update_loading_title;
-	[0.6] call stats_client_update_loading_progress;
-	uiSleep 1;
-	private["_data"];
-	_data = [_uid] call stats_load_request_send;
-	
-	[format["Initializing %1 client stats ... ", (count _data)]] call stats_client_update_loading_title;
-	[0.8] call stats_client_update_loading_progress;
-	uiSleep 1;
-	[_data, player] call stats_compile_loading;
-	
-	[format["Restoring client continuity ... "]] call stats_client_update_loading_title;
-	[0.9] call stats_client_update_loading_progress;
-	uiSleep 1;
+
+	//["Fetching client stats from server ... "] call stats_client_update_loading_title;
+	//[0.6] call stats_client_update_loading_progress;
+	//uiSleep 1;
+	//private["_data"];
+	//_data = [_uid] call stats_load_request_send;
+
+	//[format["Initializing %1 client stats ... ", (count _data)]] call stats_client_update_loading_title;
+	//[0.8] call stats_client_update_loading_progress;
+	//uiSleep 1;
+	//[_data, player] call stats_compile_loading;
+
+	//[format["Restoring client continuity ... "]] call stats_client_update_loading_title;
+	//[0.9] call stats_client_update_loading_progress;
+	//uiSleep 1;
+
 	call stats_load_core_libraries;
 	call player_continuity;
 
-	["Client stats setup complete ... "] call stats_client_update_loading_title;
-	[1] call stats_client_update_loading_progress;
-	uiSleep 1;
-	call stats_client_stop_loading;
+
+	//["Client stats setup complete ... "] call stats_client_update_loading_title;
+	//[1] call stats_client_update_loading_progress;
+	//uiSleep 1;
+	//call stats_client_stop_loading;
+
+
 };
 
 stats_setup = {
 	if (isServer) then {
 		call stats_server_setup;
 	};
-	
+
 	if (isClient) then {
 		call stats_client_setup;
 	};
@@ -776,4 +778,5 @@ stats_setup = {
 
 call stats_setup;
 
+diag_log "Taki Life Init - My Stats Functions Loaded";
 stats_functions_defined =  true;

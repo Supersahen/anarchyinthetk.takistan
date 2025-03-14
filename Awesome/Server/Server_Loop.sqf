@@ -1,23 +1,38 @@
-
 A_DEBUG = { diag_log _this; };
 if !(isServer) exitwith {};
+
+// Initialize required variables
+if (isNil "Clothing_Shops") then {Clothing_Shops = []};
+if (isNil "A_ATTACHTO") then {A_ATTACHTO = objNull};
+if (isNil "A_SHOP_GROUP") then {A_SHOP_GROUP = createGroup civilian};
+if (isNil "all_factories") then {all_factories = []};
 
 if ((isNil "A_AI_ARRAY")) then {
 	A_AI_ARRAY = [university, storage, rathaus, bailflag, assassin, hostage, impoundbuy, shop1export, shop2export, shop3export, shop4export, civ_logicunit, licenseflag4, licenseflag6];
 		
-	{
-		private["_shop"];
-		_shop = _x select 0;
-		A_AI_ARRAY set [count A_AI_ARRAY, _shop];
-	} forEach INV_ItemShops;
+	if (!isNil "INV_ItemShops") then {
+		{
+			private["_shop"];
+			_shop = _x select 0;
+			if (!isNil "_shop") then {
+				A_AI_ARRAY set [count A_AI_ARRAY, _shop];
+			};
+		} forEach INV_ItemShops;
+	};
 	
-	{
-		private["_shop"];
-		_shop = _x select 0;
-		A_AI_ARRAY set [count A_AI_ARRAY, _shop];
-		_shop = _x select 5;
-		A_AI_ARRAY set [count A_AI_ARRAY, _shop];
-	} forEach Clothing_Shops;
+	if (!isNil "Clothing_Shops") then {
+		{
+			private["_shop"];
+			_shop = _x select 0;
+			if (!isNil "_shop") then {
+				A_AI_ARRAY set [count A_AI_ARRAY, _shop];
+				_shop = _x select 5;
+				if (!isNil "_shop") then {
+					A_AI_ARRAY set [count A_AI_ARRAY, _shop];
+				};
+			};
+		} forEach Clothing_Shops;
+	};
 		
 	{
 		private["_ai"];
@@ -90,11 +105,15 @@ while {true} do {
 		
 	[] call A_WBL_F_REFRESH_S;
 			
-	{
-		if ((group _x) != (group server)) then {
-			[_x] joinSilent (group server);
-		};
-	} forEach A_AI_ARRAY;
+	if (!isNil "A_AI_ARRAY") then {
+		{
+			if (!isNil "_x" && {!isNull _x}) then {
+				if ((group _x) != (group server)) then {
+					[_x] joinSilent (group server);
+				};
+			};
+		} forEach A_AI_ARRAY;
+	};
 		
 	private["_groups"];
 	_groups = allGroups;
@@ -116,8 +135,9 @@ while {true} do {
 		
 		if (_count <= 0) then {
 			[civ_logicunit] joinSilent _group;
-			//[civ_logicunit] joinSilent grpNull;
-			[civ_logicunit] joinSilent A_SHOP_GROUP;
+			if (!isNil "A_SHOP_GROUP") then {
+				[civ_logicunit] joinSilent A_SHOP_GROUP;
+			};
 			deleteGroup _group;
 		};
 			
@@ -132,10 +152,15 @@ while {true} do {
 	{
 		private["_string", "_player", "_uid"];
 		_string = _x;
-		_player	= missionNamespace getVariable _string;
-		_uid = getPlayerUID _player;
+		_player = missionNamespace getVariable _string;
 		
-		if ( (!isNull _player) && (isPlayer _player) && (_uid != "")) then {
+		if (isNil "_player") exitWith {};
+		if (isNull _player) exitWith {};
+		
+		_uid = getPlayerUID _player;
+		if (_uid == "") exitWith {};
+		
+		if (isPlayer _player) then {
 			private["_player_cop"];
 			_player_cop = ([_player] call player_cop);
 			if ( _player_cop && (alive _player) ) then {

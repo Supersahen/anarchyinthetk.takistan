@@ -1586,7 +1586,7 @@ INV_ItemShops = [
 
 		[resourcesell,"Sell Resources",dummyobj,dummyobj,_rs,_rs,true],
 
-		[RingShop,"Ring Sell", dummobj,dummyobj,_gds,_gds,true],
+		[RingShop,"Ring Sell", dummyobj,dummyobj,_gds,_gds,true],
 
 		[OilSell1,"Oil Dealer", dummyobj,dummyobj, _emptyshop,_os,true],
 

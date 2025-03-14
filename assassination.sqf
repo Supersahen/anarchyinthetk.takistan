@@ -8,6 +8,7 @@ if (isNil "workplacejob_assassin_serverarray") then {workplacejob_assassin_serve
 if (_art == "serverloop") then {
 	while {true} do {
 		private["_i"];
+		_i = 0;
 		while { _i < (count workplacejob_assassin_serverarray) } do {
 			if (isNull ((workplacejob_assassin_serverarray select _i) select 0)) then {
 				if (!(isNull ((workplacejob_assassin_serverarray select _i) select 1))) then {

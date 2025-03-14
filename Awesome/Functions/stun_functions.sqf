@@ -1,3 +1,14 @@
+// Initialize post-processing effect variables at the top of the file
+stun_ppEffect = ppEffectCreate ["dynamicBlur", 464];
+if (stun_ppEffect != -1) then {
+	stun_ppEffect ppEffectEnable true;
+};
+
+stun_ppEffect2 = ppEffectCreate ["colorCorrections", 1549];
+if (stun_ppEffect2 != -1) then {
+	stun_ppEffect2 ppEffectEnable true;
+};
+
 stun_shot_close = {
 	private ["_unit", "_shooter", "_selection", "_damage", "_armor", "_veh", "_inveh"];
 
@@ -693,13 +704,13 @@ stun_effects_light = {
 	if (stunloop) exitwith {};
 	
 	if (isPlayer _unit) then {
-		"dynamicBlur" ppEffectEnable true;
-		"dynamicBlur" ppEffectAdjust [10];
-		"dynamicBlur" ppEffectCommit 0;
-		waitUntil {ppEffectCommitted "dynamicBlur"};
-		"dynamicBlur" ppEffectEnable true;
-		"dynamicBlur" ppEffectAdjust [0];
-		"dynamicBlur" ppEffectCommit StunActiveTime;
+		stun_ppEffect ppEffectEnable true;
+		stun_ppEffect ppEffectAdjust [10];
+		stun_ppEffect ppEffectCommit 0;
+		waitUntil {ppEffectCommitted stun_ppEffect};
+		stun_ppEffect ppEffectEnable true;
+		stun_ppEffect ppEffectAdjust [0];
+		stun_ppEffect ppEffectCommit StunActiveTime;
 	};
 	
 	if (isPlayer _unit) then {	
@@ -728,13 +739,13 @@ stun_effects_full = {
 	[_unit, "isstunned", true] call player_set_bool;
 	
 	if (isPlayer _unit) then {
-		"dynamicBlur" ppEffectEnable true;
-		"dynamicBlur" ppEffectAdjust [10];
-		"dynamicBlur" ppEffectCommit 0;
-		waitUntil {ppEffectCommitted "dynamicBlur"};
-		"dynamicBlur" ppEffectEnable true;
-		"dynamicBlur" ppEffectAdjust [0];
-		"dynamicBlur" ppEffectCommit StunActiveTime;
+		stun_ppEffect ppEffectEnable true;
+		stun_ppEffect ppEffectAdjust [10];
+		stun_ppEffect ppEffectCommit 0;
+		waitUntil {ppEffectCommitted stun_ppEffect};
+		stun_ppEffect ppEffectEnable true;
+		stun_ppEffect ppEffectAdjust [0];
+		stun_ppEffect ppEffectCommit StunActiveTime;
 	};
 						
 	[_unit] spawn stun_drop_weapons;
@@ -792,4 +803,37 @@ stun_drop_weapons = {
 	_pos = [ (getPosATL _unit) select 0, (getPosATL _unit) select 1, ((getPosATL _unit) select 2) + 0.05 ];
 	_holder setPosATL _pos;
 	{_holder addWeaponCargoGlobal [_x, 1];} foreach _weapons;
+};
+
+stun_effects = {
+	private ["_unit", "_time"];
+	_unit = _this select 0;
+	_time = _this select 1;
+	
+	if (stunloop) exitwith {};
+	
+	if (isPlayer _unit) then {
+		stun_ppEffect ppEffectEnable true;
+		stun_ppEffect ppEffectAdjust [10];
+		stun_ppEffect ppEffectCommit 0;
+		waitUntil {ppEffectCommitted stun_ppEffect};
+		stun_ppEffect ppEffectEnable true;
+		stun_ppEffect ppEffectAdjust [0];
+		stun_ppEffect ppEffectCommit StunActiveTime;
+	};
+	
+	if (isPlayer _unit) then {	
+		while{StunActiveTime > 0} do {
+			stunloop = true;
+			if(StunActiveTime > MaxStunTime) then {
+				StunActiveTime = MaxStunTime;
+			}; 
+			StunActiveTime = StunActiveTime - 1; 
+			sleep 1;
+		};
+		stunloop = false;
+		StunActiveTime = 0;	
+	} else {
+		StunActiveTime = 0;
+	};
 };

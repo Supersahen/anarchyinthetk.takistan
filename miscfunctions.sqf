@@ -29,6 +29,7 @@ parse_number = {
 	if (isNil "_number") exitWith {0};
 	if (typeName _number == "SCALAR") exitWith {_number};
 	if (typeName _number != "STRING") exitWith {0};
+	if (_number == "") exitWith {0};
 	_number = parseNumber(_number);
 	if (isNil "_number") exitWith {0};
 	if (typeName _number != "SCALAR") exitWith {0};

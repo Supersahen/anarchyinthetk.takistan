@@ -26,7 +26,7 @@ if (_effekt == "light") then {
 	if ((count _this) > 2) then {_helligkeit = _this select 2;};
 	if ((count _this) > 3) then {_farbe      = _this select 3;};
 
-	while{true} do {
+	/*while{true} do {
 		_light = "#lightpoint" createVehicleLocal getpos _object;
 		_light lightAttachObject [_object, [0,0,0]];
 		_light setLightBrightness _helligkeit;
@@ -36,6 +36,6 @@ if (_effekt == "light") then {
 		waituntil{!alive power1 and !alive power2};
 		deletevehicle _light;
 		waituntil{alive power1 and alive power2};
-	};
+	};*/
 };
 
