@@ -89,6 +89,9 @@
 	if (_bank_amount == 0 ) then {
 			diag_log "Setting Money to default as no stat loaded";
 			[player, startmoneh] call bank_set_value;
+	} else {
+		diag_log "Money loaded succesfully";
+		diag_log _bank_amount;
 	};
 	
 	statsLoaded = 1;
