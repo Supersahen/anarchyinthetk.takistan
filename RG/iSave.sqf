@@ -52,6 +52,21 @@ RG_fnc_iSave = {
 		_storage
 	};
 
+	// Add notification for what's being saved
+	private["_saveMsg"];
+	_saveMsg = switch(_varName) do {
+		case "money": {"Money"};
+		case "weapons": {"Weapons"};
+		case "magazines": {"Magazines"};
+		case "licenses": {"Licenses"};
+		case "inventory": {"Inventory"};
+		case "privateStorage": {"Private Storage"};
+		case "factory": {"Factory"};
+		case "all": {"All Stats"};
+		default {_varName};
+	};
+	systemChat format["[STATS SAVED] %1", _saveMsg];
+
 	if(playerSide == west) then
 	{
 		if (_varName == "money") then {
