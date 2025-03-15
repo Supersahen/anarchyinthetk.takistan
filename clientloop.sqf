@@ -1,7 +1,14 @@
+#define SleepWait(timeA) private["_waittt"]; _waittt = time + timeA; waitUntil {time >= _waittt};
 #include "Awesome\Functions\macro.h"
 if (not(isNil "client_loop_functions_defined")) exitWith {};
 
-liafu = true;
+check_rating = {
+	private["_player","_rating"];
+	_player = player;
+	
+	_rating = rating _player;
+	if (_rating < 0) then {player addRating -(_rating)};
+};
 
 player_is_armed = false;
 check_armed_player = {
@@ -11,19 +18,10 @@ check_armed_player = {
 	if ((primaryWeapon _player) != "") exitWith {true};
 	if ((secondaryWeapon _player) != "") exitWith {true};
 	
-	//check if player is gunner
-	private["_vehicle", "_in_vehicle", "_is_commander", "_is_driver", "_is_gunner"];
-	_vehicle = (vehicle _player);
-	_is_driver = (driver(_vehicle) == _player);
-	_in_vehicle = (_vehicle != _player);
-	_is_commander = (commander(_vehicle) == _player) && not(_is_driver);
-	_is_gunner = (gunner(_vehicle) == _player);
-	if (_in_vehicle && (_is_gunner || _is_commander))  exitWith { true };
-	
 	//Check if player has a suicide vest or similar bomb
 	private["_armed_items"];
 	//Remote bomb, timed bomb, activated bomb (ied), speed bomb, suicide vest, lighter
-	_armed_items = ["fernzuenderbombe", "zeitzuenderbombe", "aktivierungsbombe", "geschwindigkeitsbombe", "selbstmordbombe", "lighter"];
+	_armed_items = ["fernzuenderbombe", "zeitzuenderbombe", "aktivierungsbombe", "geschwindigkeitsbombe", "selbstmordbombe"];
 	if([_player, _armed_items] call INV_HasItem) exitWith { true };
 	
 	//check if player has pistol
@@ -55,7 +53,7 @@ check_armed_mounted = {
 		};
 	} forEach _occupants;
 	
-	not(isNil "_armed_occupant")
+	!(isNil "_armed_occupant")
 };
 
 
@@ -63,19 +61,20 @@ check_armed_vehicle = {
 	private["_in_vehicle", "_horns",  "_player", "_vehicle"];
 	
 	_player = _this select 0;
-	_vehicle = (vehicle player);
+	_vehicle = (vehicle _player);
 	_in_vehicle = (_vehicle != _player);
 	
-	if (not(_in_vehicle)) then {
-		_vehicle = [_player] call mounted_player_get_vehicle;
-	};
+	if (!(_in_vehicle)) then {
+			_vehicle = [_player] call mounted_player_get_vehicle;
+		};
 	
-	if (isNil "_vehicle") exitWith {false};
+	if (isNull _vehicle) exitWith {false};
 	
 	//check if the vehicle has a weapon
 	private["_weapon"];
 	_weapon = currentWeapon _vehicle;
 	if ([(currentWeapon _vehicle), "CarHorn"] call shop_weapon_inherits_from) exitWith { false };
+	if ([_vehicle] call vehicle_armed) exitwith {true};
 	
 	([_vehicle] call check_armed_mounted)
 };
@@ -111,21 +110,45 @@ check_armed = {
 	if (isNil "_player") exitWith { false };
 	if (not(alive _player)) exitWith {false};
 	
-	private["_armed_vehicle", "_armed_player"];
+	private["_armed_vehicle", "_armed_player", "_was_stunning"];
 	_armed_vehicle = ([_player] call check_armed_vehicle);
 	_armed_player =  ([_player] call check_armed_player);
 	_was_stunning = ([_player] call check_armed_stunning);
 	
 	//player groupChat format["_armed_vehicle = %1, _armed_player = %2, _was_stunning = %3", _armed_vehicle, _armed_player, _was_stunning];
 	
-	private["_armed"];
+	
+	private["_before","_armed"];
+	_before = _player getVariable ["armed", false];
 	_armed = _armed_vehicle || _armed_player || _was_stunning;
+	
+	if (!_armed && _before) then {
+		_player setVariable ["armedTime", time, true];
+	}else{
+		if (_armed && !_before) then {
+			_player setVariable ["armedTime", time, true];
+		};
+	};
+	
 	[_player, _armed] call player_update_armed;
 	_player setVariable ["armed", _armed];
 	_armed
 };
 
-
+check_inVehicle = {
+	private["_player"];
+	_player = player;
+	if !(alive _player) exitwith {};
+	if ([_player] call player_get_dead) exitWith {};
+	
+	private["_vehicle"];
+	_vehicle = vehicle _player;
+	if (isNull _vehicle) then {
+		_player setVariable ["inVehicle", objNull, false];
+	}else{
+		_player setVariable ["inVehicle", _vehicle, false];
+	};
+};
 
 compare_array = {
 	private["_a", "_b"];
@@ -148,14 +171,6 @@ compare_array = {
 };
 
 
-check_mobile = {
-	private["_player"];
-	_player = player;
-	if (([_player, "handy"] call INV_GetItemAmount) == 1) exitWith {};	
-	[_player, "handy", 1] call INV_SetItemAmount;
-	[_player, "mobile", true] call player_set_bool;
-};
-
 check_keychain = {
 	private["_player"];
 	_player = player;
@@ -169,8 +184,7 @@ check_inventory = {
 	private["_player"];
 	_player = player;
 	
-	call check_mobile;
-	call check_keychain;
+	[] call check_keychain;
 };
 
 
@@ -179,7 +193,10 @@ cop_stun_gun_modify = {
 	if((player ammo (currentWeapon player)) <= 0) exitWith {};
 	if (not(alive player)) exitWith {};
 	
-	if ((((currentWeapon player) == "M9" || (currentWeapon player) == "M9SD")) && ((currentMagazine player) == ("15Rnd_9x19_M9SD"))) then {	
+	if ((((currentWeapon player) == "M9" || (currentWeapon player) == "M9SD")) && ((currentMagazine player) == ("15Rnd_9x19_M9SD"))) then {
+		
+		private["_magazines", "_magazines_count", "_ammo", "_c"];
+		
 		_magazines = magazines player;
 		_magazines_count = {_x == "15Rnd_9x19_M9SD"} count (_magazines);
 		_ammo = player ammo (currentWeapon player);
@@ -226,7 +243,7 @@ check_bank = {
 };
 
 check_actions = {
-	private["_vehicle"];
+	private["_vehicle","_in_vehicle"];
 	_vehicle = (vehicle player);
 	_in_vehicle = (_vehicle != player);
 	if (not(_in_vehicle)) exitWith {};
@@ -242,6 +259,7 @@ check_actions = {
 
 
 check_factory_actions = {
+	if (isCop) exitwith{};
 	private["_player"];
 	_player = player;
 	private["_vehicle", "_in_vehicle"];
@@ -250,7 +268,7 @@ check_factory_actions = {
 	
 	private["_factory"];
 	_factory = [_player, 5] call factory_player_near;
-	if (isNil "_factory" || not(INV_shortcuts) || _in_vehicle || not(alive _player)) exitWith {
+	if (((typeName _factory) != "ARRAY") || not(INV_shortcuts) || _in_vehicle || not(alive _player)) exitWith {
 		[_player] call factory_remove_actions;
 	};
 	
@@ -269,7 +287,7 @@ check_gang_area_actions = {
 	
 	private["_gang_area"];
 	_gang_area = [_player, 5] call gang_area_player_near;
-	if (isNil "_gang_area" || not(INV_shortcuts) || _in_vehicle || not(alive _player)) exitWith {
+	if ((isNull _gang_area) || not(INV_shortcuts) || _in_vehicle || not(alive _player)) exitWith {
 		[_player] call gang_area_remove_actions;
 	};
 
@@ -288,16 +306,13 @@ check_workplaces = {
 	} forEach workplacearray;
 };
 
-
 logics_check_object = 0;
 logics_check_warn_distance = 1;
 logics_check_teleport_distance = 2;
 
 logics_checks = [
-	[terrorhideoutlogic, 900, 750],
-	[assassinlogic, 160, 80],
-	[deadcamlogic, 400, 300],
-	[impoundarea1, 400, 100]
+	[impoundarea1, 400, 100],
+	[A_BIS_LOGIC, 1000, 1500]
 ];
 
 check_logics = {
@@ -305,9 +320,9 @@ check_logics = {
 	_alive = alive player;
 	
 	if (not(_alive)) exitWith {};
-
+	
 	{
-		private["_entry", "_cdistance", "_logic", "_warn_distance", "_teleport_distance"];
+		private["_entry", "_logic", "_warn_distance", "_teleport_distance", "_distance"];
 		_entry = _x;
 		
 		_warn_distance = _entry select logics_check_warn_distance;
@@ -315,13 +330,12 @@ check_logics = {
 		_logic = _entry select logics_check_object;
 		_distance = player distance _logic;
 		
-		
 		if (_distance <= _teleport_distance) exitWith {
 			[player] call player_teleport_spawn;
 			player groupChat format["You have been teleported out of a restricted zone"];
 		};
 		
-		if (_distance < _warn_distance) exitWith {
+		if (_distance <= _warn_distance) exitWith {
 			titleText ["You are entering a restricted zone. Turn around!", "plain"]
 		};
 		
@@ -375,11 +389,32 @@ check_bases = {
 
 
 check_static_weapons = {
-	private["_vehicle","_isStatic"];
+	private["_vehicle","_isStatic","_attachedTo"];
 	_vehicle = (vehicle player);
 	_isStatic = (_vehicle isKindOf "StaticWeapon");
-	if (not(_isStatic)) exitWith {};
-	
+	if (!(_isStatic)) exitWith {};
+	if (_vehicle getVariable ["attached", false]) then {
+			moveOut player;
+			player setVelocity[0,0,0];
+			
+			_attachedTo = _vehicle getVariable ["attachedTo", objNull];
+			_backToSpawn = false;
+			if (isNil "_attachedTo") then {
+				_backToSpawn = true;
+			}else{
+				if (isNull _attachedTo) then {
+					_backToSpawn = true;
+				}else{
+					player setPosATL (getPosATL _attachedTo);
+					player groupChat "STATIC LOADING ERROR: Reverted back to vehicle";
+				};
+			};
+			
+			if _backToSpawn then {
+				player setPosATL ([player] call respawn_location);
+				player groupChat "STATIC LOADING ERROR: Reverted back to spawn";
+			};
+		};
 	_vehicle lock false;
 };
 
@@ -402,7 +437,6 @@ check_smoke_grenade = {
 	player setVariable ["gasmask", _mask, true];
 	if (_mask) exitWith {};
 	
-	
 	[] spawn {
 		private ["_fadeInTime", "_fadeOutTime"];
 		_fadeInTime   = 1;
@@ -414,126 +448,203 @@ check_smoke_grenade = {
 		sleep _fadeInTime;
 		player setVariable ["flashed", false, true];
 	};
-		
 };
 
-iactionarr = [];
-
 check_droppable_items = {
-	private["_objects"];
-
-	_objects = nearestobjects [getpos player, droppableitems, 5];
+	//player groupChat format["check_droppable_items %1", _this];
+	private["_player"];
+	_player = player;
+	if (not(alive _player)) exitWith {};
 	
-	{
-		private ["_exit", "_i", "_array", "_object"];
-		_exit = false;
-		_object = _x;
+	private["_current_object"];
+	_current_object = _player getVariable "current_object";
+	_current_object = if (isNil "_current_object") then {objNull} else {_current_object};
+	
+	private["_objects", "_near_object"];
+	_objects = nearestObjects [getPosATL _player, droppableitems, 5];
+	//player groupChat format["_objects = %1", _objects];
+	_near_object = if (count _objects == 0) then {objNull} else {_objects select 0};
+	
+	if (isNull _current_object && isNull _near_object) exitWith {};
+	
+	//remove the action for the previous object
+	if (not(isNull _current_object)) then {
+		private["_distance"];
+		_distance = _current_object distance _player;
+		if (_distance < 3) exitWith {};
 		
-		for "_i" from 0 to (count iactionarr) do {
-			_array = iactionarr select _i;
-			if(_object in _array) exitWith{ 
-				_exit = true;
-			};
+		private["_action_id"];
+		_action_id = _player getVariable "current_action";
+		if (not(isNil "_action_id")) then {
+			_player removeAction _action_id;
+			_player setVariable ["current_action", nil];
+			//player groupChat format["REMOVED: _action_id = %1, _object = %2", _action_id, _current_object];
 		};
+		_player setVariable ["current_object", nil];
+	};
+	
+	_current_object = _player getVariable "current_object";
+	_current_object = if (isNil "_current_object") then {objNull} else {_current_object};
+	
+	if (not(isNull(_current_object))) exitWith {};
+	
+	//add the action for the new object
+	if (not(isNull _near_object)) then {
+		private["_distance"];
+		_distance = _near_object distance _player;
+		if (not(_distance < 3)) exitWith {};
 
-		if(_exit) exitWith {};
+		private["_amount", "_item", "_illegal", "_isIllegal"];
+		_amount = _near_object getVariable "amount";
+		_item = _near_object getVariable "item";
 		
-		private["_near_players", "_near_players_count"];
-		_near_players = [_object, 3] call players_object_near;
-		_near_players_count = (count _near_players);
-		//player groupChat format["_near_players = %1", _near_players];
+		if (isNil "_amount" || isNil "_item") exitWith {};
 		
-		if (((_object distance player) < 3) && (_near_players_count < 2)) then {
-			private["_amount", "_item", "_infos", "_name", "_action"];
-			_array	= _object getvariable "droparray";
-			if(isNil "_array") exitWith {};
-			
-			_amount	= [_array select 0] call decode_number;
-			_item 	= _array select 1;
-			_infos	= _item call INV_GetItemArray;
-			_name	= _infos call INV_GetItemName;
-			
-			_action = player addaction [format["Pickup %1 (%2)", _name, _amount], "pickup.sqf", [_object, _item, ([_amount] call encode_number)]];
-			iactionarr = iactionarr + [[_object, _action]];
-		};	
-	} foreach _objects;
-
-	for [{_i=0}, {_i < (count iactionarr)}, {_i=_i+1}] do {
-		private["_object", "_action", "_variable"];
-		_array	= iactionarr select _i;
-		_object    = _array select 0;
-		_action = _array select 1;
-		_variable	= _object getvariable "droparray";
-
-		private["_near_players", "_near_players_count"];
-		_near_players = [_object, 3] call players_object_near;
-		_near_players_count = (count _near_players);
-		if(isnull _object or _object distance player > 2 or (isnil "_variable") || _near_players_count > 1) then {	
-			player removeAction _action;
-			iactionarr set [_i, 0];
-			iactionarr = iactionarr - [0];
+		private["_name"];
+		_amount = [_amount] call decode_number;
+		_name = (_item call INV_GetItemName);
+		_isIllegal = (_item call INV_GetItemIsIllegal);
+		
+		private["_action_id"];
+		if ((isCop) and (_isIllegal)) then {
+			// Copside illegal item. Same global variable on purpose (either is picking something up OR seizing, not both the same time)
+			_action_id = _player addAction [
+				format["Seize %1 (%2)", _name, strM(_amount)], "noscript.sqf", 
+				format['[%1, %2] call interact_object_seize', _player, _near_object], 1, false, true, "", 
+				format['not(interact_object_pickup_active) && (((player distance %1) < 3) && (count([%1, 3] call players_object_near) < 2))', _near_object]
+			];
+		} else {
+			//Not on copside or legal item
+			_action_id = _player addAction [
+				format["Pickup %1 (%2)", _name, strM(_amount)], "noscript.sqf", 
+				format['[%1, %2] call interact_object_pickup', _player, _near_object], 1, false, true, "", 
+				format['not(interact_object_pickup_active) && (((player distance %1) < 3) && (count([%1, 3] call players_object_near) < 2))', _near_object]
+			];
 		};
+		//player groupChat format["ADDED: _action_id = %1, _object = %2", _action_id, _near_object];
+		_player setVariable ["current_object", _near_object];
+		_player setVariable ["current_action", _action_id];
 	};
 };
 
 check_restrains = {
-	if (iscop) exitWith {};
-	if (not(alive player)) exitWith {};
+//	if (iscop) exitWith {};
+	if (!(alive player)) exitWith {};
 	
 	private["_physicallyRestrained", "_logicallyRestrained"];
 	_physicallyRestrained = ((animationState player) ==  "civillying01");
 	_logicallyRestrained = [player, "restrained"] call player_get_bool;
 	
-	if (_logicallyRestrained && not(_physicallyRestrained)) then {
+	if (_logicallyRestrained && !(_physicallyRestrained)) then {
 		format['%1 switchMove "civillying01";', player] call broadcast;
-	}
-	else { if (not(_logicallyRestrained) && _physicallyRestrained) then {
+	} else { if (!(_logicallyRestrained) && _physicallyRestrained) then {
 		format['%1 switchMove "amovppnemstpsnonwnondnon";', player] call broadcast;
 		[player, "isstunned", false] call player_set_bool;
 		StunActiveTime=0;
 	}
 	else { if (_logicallyRestrained && _physicallyRestrained) then {
-		if (not([player, 50] call player_near_cops)) then {
+		if (!([player, 50] call player_near_cops)) then {
 			[player, "restrained", false] call player_set_bool;
 			player groupChat format["You have managed to unrestrain yourself!"];
 		};
 	};};};
 };
 
-
-
-check_respawn_time = {
-	if (not(alive player)) exitWith {};
-	private["_interval"];
-	_interval = 30;
-	if (not((time % _interval) == 0)) exitWith {};
-	[player, "extradeadtime", -(_interval)] call player_update_scalar;
+check_insideJail = {
+	private["_player", "_trigger", "_list", "_inJail"];
 	
+	_player = player;
+	
+	if (missionNamespace getVariable ["player_inJail_checking", false]) exitwith {};
+	if (missionNamespace getVariable ["player_prison_releasing", false]) exitwith {};
+	if ([_player] call player_get_arrest) exitwith {};
+	if (isCop && ([_player, "roeprison"] call player_get_bool)) exitwith {};
+	if (((getPosATL _player) select 2) > 5) exitwith {};
+	if ((vehicle _player) != _player) exitwith {};
+	
+	_trigger = JailTrigger1;
+	_list = list _trigger;
+	
+	if !(_player in _list) exitwith {};
+	
+	_inJail = false;
+	{
+		_trigger = _x;
+		_list = list _trigger;
+		
+		if (_player in _list) exitwith {
+				_inJail = true;
+			};
+	} forEach [JailTrigger2, JailTrigger3, JailTrigger4];
+	
+	if _inJail then {
+			player_inJail_checking = true;
+			[_player] spawn {
+					private["_player","_exit"];
+					_player = _this select 0;
+					_exit = false;
+					
+					_player groupchat "You have 30 seconds to leave the Jail";
+					SleepWait(30)
+					
+					if (missionNamespace getVariable ["player_prison_releasing", false]) then {_exit = true;};
+					if ([_player] call player_get_arrest) exitwith {_exit = true;};
+					if !(_player in (list JailTrigger1)) exitwith {_exit = true;};
+					if (({_player in (list _x)} count [JailTrigger2, JailTrigger3, JailTrigger4]) == 0) exitwith {_exit = true;};
+					if (((getPosATL _player) select 2) > 5) exitwith {_exit = true;};
+					if ((vehicle _player) != _player) exitwith {_exit = true;};
+					
+					if !_exit then {
+							_player groupchat "You have been removed from Jail";
+							_player setPosATL (getPosATL CopPrisonAusgang);
+						};
+					
+					SleepWait(3)
+					player_inJail_checking = false;
+				};
+		};
 };
+
+check_falling = {
+	if (player != (vehicle player)) exitwith {};
+	
+	private["_unit","_vel","_velZ"];
+	_unit = player;
+	_vel = velocity _unit;
+	_velZ = _vel select 2;
+	
+	if ((_velZ >= 8) || (_velZ <= -8)) then {
+		falling = time;
+	};
+};
+
 client_loop = {
 	private ["_client_loop_i"];
 	_client_loop_i = 0; 
 
 	while {_client_loop_i < 5000} do {
+		[] call check_rating; 
 		[player] call check_armed;
-		call check_money;
-		call check_bank;
-		call check_actions;
-		call check_factory_actions;
-		call check_gang_area_actions;
-		call check_inventory;
-		call cop_stun_gun_modify;
-		call check_workplaces;
-		call check_logics;
-		call check_tampering;
-		call check_camera;
-		call check_bases;
-		call check_static_weapons;
-		call check_respawn_time;
-		call check_smoke_grenade;
-		call check_droppable_items;
-		call check_restrains;
+		[] call check_inVehicle;
+		[] call check_money;
+		[] call check_bank;
+		[] call check_actions;
+		[] call check_factory_actions;
+		[] call check_gang_area_actions;
+		[] call check_inventory;
+		[] call cop_stun_gun_modify;
+		[] call check_workplaces;
+		[] call check_logics;
+		[] call check_camera;
+		[] call check_bases;
+		[] call check_static_weapons;
+		[] call check_smoke_grenade;
+		[] call check_droppable_items;
+		[] call check_restrains;
+		[] call check_insideJail;
+		[] call check_falling;
 		sleep 0.5;
+		enableEngineArtillery false; 
 		disableuserinput false;
 		_client_loop_i = _client_loop_i + 1;
 	};

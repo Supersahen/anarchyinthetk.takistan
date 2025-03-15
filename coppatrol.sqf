@@ -1,29 +1,30 @@
 // script by eddiev223 and cobra//additions by Gman
 
+private["_selection", "_moneyearned", "_distance"];
+
 _selection = ((_this select 3)select 0);
 
 _moneyearned = 0;
 _distance = 0;
 
 
-if (_selection == "start") then
-{
+if (_selection == "start") then {
+
+private["_newmarker","_markerlocation","_markerobj","_markername","_plocation"];
 
 pmissionactive = true;
 deleteMarkerLocal "patrolmarker";
-
 
 _newmarker = (floor(random(count coppatrolarray)));
 _markerlocation = (coppatrolarray select _newmarker);
 
 _markerobj = createmarkerlocal ["patrolmarker",[0,0]];
 _markername = "patrolmarker";
-_markerojb setmarkershapelocal "Icon";
-//"patrolmarker" setMarkerBrushLocal "solid";
-"patrolmarker" setmarkertypelocal "warning";
-"patrolmarker" setmarkercolorlocal "coloryellow";
-"patrolmarker" setmarkersizelocal [1, 1];
-"patrolmarker" setmarkertextlocal "Patrol point";
+_markerobj setmarkershapelocal "Icon";
+_markername setmarkertypelocal "warning";
+_markername setmarkercolorlocal "coloryellow";
+_markername setmarkersizelocal [1, 1];
+_markername setmarkertextlocal "Patrol point";
 _markername Setmarkerposlocal _markerlocation;
 
 player sidechat "Your patrol mission will be available shortly, simply get to the patrol point, time is not a factor in how large the payment is.";
@@ -48,7 +49,7 @@ while {pmissionactive} do {
 
 		_markerobj = createmarkerlocal ["patrolmarker",[0,0]];
 		_markername = "patrolmarker";
-		_markerojb setmarkershapelocal "icon";
+		_markerobj setmarkershapelocal "icon";
 		//"patrolmarker" setMarkerBrushLocal "solid";
 		"patrolmarker" setmarkertypelocal "warning";
 		"patrolmarker" setmarkercolorlocal "coloryellow";
@@ -67,19 +68,15 @@ while {pmissionactive} do {
 	};
 deleteMarkerLocal "patrolmarker";
 
-
-
 };
 
-if (_selection == "end") then
-{
-pmissionactive = false;
-deleteMarkerLocal "patrolmarker";
-player sidechat "Patrol mission ended you must wait 60s to get a new one";
-patrolwaittime = true;
-sleep 60;
-patrolwaittime = false;
-
+if (_selection == "end") then {
+	pmissionactive = false;
+	deleteMarkerLocal "patrolmarker";
+	player sidechat "Patrol mission ended you must wait 60s to get a new one";
+	patrolwaittime = true;
+	sleep 60;
+	patrolwaittime = false;
 };
 
 

@@ -1,34 +1,13 @@
-/**
- * Script principal qui initialise le système de logistique
- * 
- * Copyright (C) 2010 madbull ~R3F~
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "config.sqf"
 
-if (isServer) then
-{
+if (isServer) then {
 	// On crée le point d'attache qui servira aux attachTo pour les objets à charger virtuellement dans les véhicules
 	R3F_LOG_PUBVAR_point_attache = "HeliHEmpty" createVehicle [0, 0, 0];
 	publicVariable "R3F_LOG_PUBVAR_point_attache";
 };
 
 // Un serveur dédié n'en a pas besoin
-if !(isServer && isDedicated) then
-{
+if !(isServer && isDedicated) then {
 	// Le client attend que le serveur ai créé et publié la référence de l'objet servant de point d'attache
 	waitUntil {!isNil "R3F_LOG_PUBVAR_point_attache"};
 	
@@ -60,6 +39,27 @@ if !(isServer && isDedicated) then
 	R3F_LOG_FNCT_remorqueur_init = compile preprocessFile "Awesome\R3F\R3F_LOG\remorqueur\remorqueur_init.sqf";
 	R3F_LOG_FNCT_transporteur_init = compile preprocessFile "Awesome\R3F\R3F_LOG\transporteur\transporteur_init.sqf";
 	
+	R3F_LOG_FNCT_LOCKCHECK = {
+			private["_player", "_object"];
+			_player = _this select 0;
+			_object = _this select 1;
+			
+			(
+				(!(alive player)) ||
+				(player getVariable ["isstunned", false]) ||
+				(player getVariable ["restrained", false]) ||
+				((player distance _object) > 15) ||
+				false
+			)
+		};
+		
+	R3F_LOG_FNCT_STATICCHECK = {
+		private["_object"];
+		_object = _this select 0;
+		if !(_object isKindOf "StaticWeapon") exitwith {true};
+		(count(crew _object) == 0)
+	};
+	
 	/** Indique quel est l'objet concerné par les variables d'actions des addAction */
 	R3F_LOG_objet_addAction = objNull;
 	
@@ -82,5 +82,5 @@ if !(isServer && isDedicated) then
 	R3F_LOG_action_selectionner_objet_charge_valide = false;
 	
 	/** Ce fil d'exécution permet de diminuer la fréquence des vérifications des conditions normalement faites dans les addAction (~60Hz) */
-	execVM "Awesome\R3F\R3F_LOG\surveiller_conditions_actions_menu.sqf";
+	[] execVM "Awesome\R3F\R3F_LOG\surveiller_conditions_actions_menu.sqf";
 };

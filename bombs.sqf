@@ -1,3 +1,4 @@
+private["_art"];
 _art = _this select 0;
 
 if (_art == "init") then {
@@ -7,37 +8,35 @@ if (_art == "init") then {
     if (time > 120) then {
 		INV_BombGetServerArray = true;
 		publicVariable "INV_BombGetServerArray";
-    } 
-    else {
+    }else{
 		INV_BombGetServerArray = false;
     };
 
     INV_BombSpawn = {
+		private["_men1", "_men2", "_men3", "_has_admin_camera"];
+		
         if ((typeName _this) == "OBJECT") then {
             if (not(isNull _this)) then {
                 if (((getPosATL _this) select 2) < 5) then {
-                    liafu = true;
                     createVehicle ["Bo_GBU12_LGB", (getPosATL _this), [], 0, "NONE"];
                         
                     //if (player distance _this < 25) then {player setdamage 1;}; // All players within 25m die instantly
                     // _this setDamage 1;
                         
                     if (!(_this isKindOf "Man")) then {
-                        _men1 = (crew _this); 
+                        _men1 = [_this] call vehicle_getCrew; 
                         {
-                            liafu = true;
-                            _has_admin_camera = _x getVariable "has_admin_camera";
-                            if ( !(isnil "_has_admin_camera") && _has_admin_camera) then {
-                                } else {
-                                    _x setDamage 1;
-                                };                
+ 
+                            _has_admin_camera = _x getVariable ["has_admin_camera", false];
+                            if !(_has_admin_camera) then {
+									 _x setDamage 1;
+                                };               
                         } forEach _men1;            
                     };
                         
                     _men2 = nearestObjects[getPosATL _this, ["Man", "LandVehicle", "Air"], 25];
 
                     {
-                        liafu = true;
                         _has_admin_camera = _x getVariable "has_admin_camera";
                         if ( !(isnil "_has_admin_camera") && _has_admin_camera) then {
                         } 
@@ -46,9 +45,8 @@ if (_art == "init") then {
                         };
                         
                         if(!(_x isKindOf "Man")) then {
-                            _men3 = crew _x;
+                            _men3 = [_x] call vehicle_getCrew;
                             {
-                                _liafu = true;
                                 _has_admin_camera = _x getVariable "has_admin_camera";
                                 if ( !(isnil "_has_admin_camera") && _has_admin_camera) then {
 									
@@ -60,20 +58,17 @@ if (_art == "init") then {
                     } forEach _men2;
                 };
             };
-        } 
-        else {
+        }else{
             createVehicle ["Bo_GBU12_LGB", (_this), [], 0, "NONE"];
             //if (player distance _this < 25) then {player setdamage 1;}; // All players within 25m die instantly
             _men2 = nearestObjects[_this, ["Man", "LandVehicle", "Air"], 25];
                 
             {
-                liafu = true;
                 _x setDamage 1;
                         
                 if(!(_x isKindOf "Man")) then {
-					_men3 = crew _x;
+					_men3 = [_x] call vehicle_getCrew;
 					{
-						_liafu = true;
 						_x setDamage 1;
 					} forEach _men3;
 				};
@@ -136,12 +131,28 @@ if (_art == "init") then {
             };
         };
     };
+	
+	INV_BombVehicle = {
+			private["_id", "_vehicle", "_i"];
+			
+			_id = _this select 0;
+			_vehicle = objNull;
+			
+			for [{_i=0}, {_i < (count INV_ServerBombArray)}, {_i=_i+1}] do {
+					if (((INV_ServerBombArray select _i) select 0) == _id) exitWith {
+							_vehicle = ((INV_ServerBombArray select _i) select 1);
+						};
+				};
+			
+			_vehicle
+		};
 
     if (isServer) then {["server"] spawn A_SCRIPT_BOMBS;};
     ["client"] spawn A_SCRIPT_BOMBS;
 };
 
 if (_art == "server") then {
+	private["_lastLength", "_skipWait", "_array", "_id", "_vehicle", "_name", "_status", "_settings", "_i"];
     _lastLength = 0;
 
     while {true} do {
@@ -185,7 +196,7 @@ if (_art == "server") then {
 
                 case "aktivierungsbombe": {
                     if (!(_settings select 0)) then {
-                        _bombhandler = _vehicle addEventHandler ["engine", { _vehicle = _this select 0;  if (isEngineOn _vehicle) then { _vehicle removeAllEventHandlers "engine"; _vehicle spawn INV_BombSpawn; }; }];
+                      _vehicle addEventHandler ["engine", { _vehicle = _this select 0;  if (isEngineOn _vehicle) then { _vehicle removeAllEventHandlers "engine"; _vehicle spawn INV_BombSpawn; }; }];
                     };
 
                     if (_status == "defused") then {
@@ -195,6 +206,7 @@ if (_art == "server") then {
                 };
 
                 case "geschwindigkeitsbombe": {
+					private["_active","_speed","_newtime"];
                     _active = (_settings select 1);
                     _speed  = speed _vehicle;
                     if ((_active) and (_speed < (_settings select 0))) then { 
@@ -233,6 +245,7 @@ if (_art == "server") then {
 };
 
 if (_art == "client") then {
+	private["_a1","_a2","_a3","_a4","_a5","_v","_skipWait","_array","_i","_vehicle","_item","_actionArr","_id","_j"];
     _a1=0; _a2=0; _a3=0; _a4=0; _a5=0; _v=0;
     while {true} do {
         _skipWait = false;
@@ -289,9 +302,14 @@ if (_art == "client") then {
 };
 
 if (_art == "use") then {
+	private["_item","_anzahl"];
     _item   = _this select 1;
     _anzahl = _this select 2;
         
+	if true exitwith {
+		player groupChat "Bombs are temporarily Disabled until they have been redone.";
+	};
+
     if (_item == "zeitzuenderbombe") then {
         if (!(createDialog "timebombconfig")) exitWith {
             hint "Dialog Error!";
@@ -336,6 +354,7 @@ if (_art == "use") then {
 };
 
 if (_art == "plant") then {
+	private["_item","_id","_vcl","_settings","_exit","_explosion"];
     _item = _this select 1;
     _id = format["%1_%2", player, round(time)];
     _vcl = vehicle player;
@@ -369,6 +388,7 @@ if (_art == "plant") then {
 };
 
 if (_art == "config") then {
+	private["_art","_name","_id", "_sliderpos", "_vehicle"];
     _art  = _this select 1;
     _name = _this select 2;
     _id   = _this select 3;
@@ -416,6 +436,13 @@ if (_art == "config") then {
         };
         case "aktivierungsbombe": {
             if (_art == "defuse") then {
+				
+				private["_vehicle", "_i"];
+				_vehicle = objNull;
+				_vehicle = ([_id] call INV_BombVehicle);
+				_vehicle removeAllEventHandlers "engine";
+				format['%1 removeAllEventHandlers "engine";', _vehicle] call broadcast;
+				
                 format["""%1"" call INV_BombDelete", _id] call broadcast;
 				[player, _name, 1] call INV_AddInventoryItem;player groupChat localize "STRS_inv_item_vehiclebomb_defused";
             };

@@ -76,7 +76,8 @@ marker_side_init = {
 };
 
 
-marker_side_loop_draw = {
+marker_loop_draw = {
+	if (not([player] call camera_get_map_open)) exitWith {};
 	private["_local_marker"];
 	//player groupChat format["marking %1", _this];
 	_local_marker = _this select 0;
@@ -84,21 +85,47 @@ marker_side_loop_draw = {
 	
 	private["_player_variable_name", "_player_variable"];
 	_player_variable_name = _local_marker;
-	_player_variable = missionNamespace getVariable _player_variable_name;
+	_player_variable = missionNamespace getVariable [_player_variable_name, objNull];
+
+	if (not([_player_variable] call player_exists)) exitWith {
+		_local_marker setMarkerAlphaLocal 0;
+	};
+	
+	private["_location"];
+	_location = getPos _player_variable;
+	_local_marker setMarkerAlphaLocal 1;
+	_local_marker setMarkerPosLocal [(_location select 0), (_location select 1)];
+	_local_marker setMarkerTextLocal (format["%1-%2", _player_variable, (name _player_variable)]);
+};
+
+marker_side_loop_draw = {
+	if (not(visibleMap)) exitWith {};
+	private["_local_marker"];
+	//player groupChat format["marking %1", _this];
+	_local_marker = _this select 0;
+	if (isNil "_local_marker") exitWith {};
+	
+	private["_player_variable_name", "_player_variable"];
+	_player_variable_name = _local_marker;
+	_player_variable = missionNamespace getVariable [_player_variable_name, objNull];
 
 
-	if (not([player, "sidemarkers"] call player_get_bool) || 
-		not([player] call player_human) || 
-		([player] call player_civilian) ||
-		not([_player_variable] call player_human) ||
-		([_player_variable] call player_civilian)) exitWith {
+	if (
+			!([player, "sidemarkers"] call player_get_bool) || 
+			!([player] call player_human) || 
+			([player] call player_civilian) ||
+			!([_player_variable] call player_human) ||
+			([_player_variable] call player_civilian)
+		) exitWith {
 		_local_marker setMarkerAlphaLocal 0;
 	};
 	
 	private["_has_admin_camera"];
-	_has_admin_camera = _player_variable getVariable "has_admin_camera";
-	_has_admin_camera = if (isNil "_has_admin_camera") then { false } else {_has_admin_camera};
-	_has_admin_camera = if (typeName _has_admin_camera != "BOOL") then {false} else {_has_admin_camera};
+//	_has_admin_camera = _player_variable getVariable "has_admin_camera";
+//	_has_admin_camera = if (isNil "_has_admin_camera") then { false } else {_has_admin_camera};
+//	_has_admin_camera = if (typeName _has_admin_camera != "BOOL") then {false} else {_has_admin_camera};
+	
+	_has_admin_camera = _player_variable getVariable ["has_admin_camera", false];
 	
 	if (_has_admin_camera) exitWith {
 		_local_marker setMarkerAlphaLocal 0;
@@ -120,14 +147,22 @@ marker_side_loop_draw = {
 
 marker_side_loop = {
 	if (isNil "marker_side_array") then {
-		marker_side_array = call marker_side_init;
+		marker_side_array = [] call marker_side_init;
 	};
 	
 	private["_marker_loop_i"];
 	_marker_loop_i = 0;
 	while {true} do {
+		private["_player"];
+		_player = player;
+	
 		{ 
-			[_x] call marker_side_loop_draw; 
+			if ([_player] call camera_enabled) then {
+				[_x] call marker_loop_draw;
+			}
+			else {
+				[_x] call marker_side_loop_draw; 
+			};
 		} forEach marker_side_array;
 		_marker_loop_i = _marker_loop_i + 1;
 		sleep 1;

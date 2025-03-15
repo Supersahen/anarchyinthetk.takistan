@@ -22,7 +22,7 @@ STRS_dead_player_is_dead_civ,You are dead,
 STRS_dead_player_is_dead_cop,You are dead,
 STRS_slave_zuviele,You cannot buy any more slaves!!,
 STRS_slave_nomoney,You cannot afford a slave...Maybe you should be a slave!.,
-STRS_slave_gekauft," ""%1"," you have bought a slave for $%2. Take him to a workplace and he will earn you money."" "
+STRS_slave_gekauft, "You have bought a slave for $%1. Take him to a workplace and he will earn you money."
 STRS_slave_moneyaction,Take the profit this slave has made you.,
 STRS_slave_tot,One of your slaves has died! Protect them in future!,
 STRS_slave_geldabnahme_ja,This slave has earned you $%1.,
@@ -283,7 +283,7 @@ STRS_prison_freenow,The Civ is free now.
 STRS_pimp_vclsell_toofast,You are going too fast to sell the vehicle
 STRS_pimp_vclsell,You sold the vehicle for $%1.
 STRM_mission_marker_arbeiter,Worker
-STRM_mission_marker_rathaus,City Hall
+STRM_mission_marker_govMan,City Hall
 STRM_mission_marker_deliverypoint1,Delivery 1
 STRM_mission_marker_deliverypoint2,Delivery 2
 STRM_mission_marker_deliverypoint3,Delivery 3
@@ -621,7 +621,7 @@ STRS_inv_inventar_uebergabe_success_self,You gave %1 %2 units of %3.
 STRS_inv_inventar_uebergabe_schluessel_success,You got a key from another player. The Key is now on your Keychain.
 STRS_inv_inventar_uebergabe_schluessel_success_self,You gave the Key for the Vehicle to the selected player (It has been removed from your keychain).
 STRS_item_moneh,Money
-STRS_item_moneh_info,"Buy licenses, vehicles, weapons, drugs and other items! Note that you can not carry more than $999,999."
+STRS_item_moneh_info,"Buy licenses, vehicles, weapons, drugs and other items!"
 STRS_inventar_moneh,You cannot use money. If you buy something
 STRS_inv_item_defuser,Defuser
 STRS_inv_item_defuser_info,With this device you can defuse Satchel Charges and Mines.
@@ -630,7 +630,7 @@ STRS_inv_items_defuser_failed,You made a mistake while defusing the bomb and it 
 STRS_inv_items_defuser_nobomb,No Bomb to defuse.
 STRS_inv_item_OilBarrel,Full of oil
 STRS_inv_item_lighter,Lighter
-STRS_inv_item_lighter_info,hmm i wonder if i can use this to set a cars fuel on fire
+STRS_inv_item_lighter_info,hmm i wonder if i can use this to set a cars fuel on fire. Disabled
 STRS_inv_item_repairkit,Repair Kit
 STRS_inv_item_repairkit_info,Use it within a vehicle to repair the vehicle. You have to be the driver
 STRS_inv_item_fuelcut,Fuel line cutter
@@ -651,7 +651,7 @@ STRS_inv_items_refuel_refueled,You refueled your vehicle
 STRS_inventar_repair_repaired,You repaired this vehicle.
 STRS_inv_items_repair_wrongvcl,You need a large repair kit for this vehicle.
 STRS_inv_item_medikit,Medikit
-STRS_inv_item_medikit_info,The medic kit restores the Health back to 100%. Just use it.
+STRS_inv_item_medikit_info, "The medkit will restore health to: 70% by default, 90% if you have the paramedic license, 100% if you have a medic skin. If you have the paramedic license it will also fix legs. Select who to use it on (including yourself) then click use."
 STRS_inv_items_medikit_nichtverletzt,You are not injured.
 STRS_inv_items_medikit_benutzung,Wait five seconds until you are healed.
 STRS_inv_items_medikit_fertig,You are healed again.
@@ -790,9 +790,10 @@ STRS_inv_item_nahrung_verhungern,You are starving.
 STRS_inv_item_drink_verthirstn,You are Dehydrated.
 STRS_inv_item_drink_gegessen,You Drank something you are now %1/100 thirsty.
 STRS_inv_item_selbstmordbombe,Suicide Bomb
-STRS_inv_item_selbstmordbombe_info,When you are using this item
+STRS_inv_item_selbstmordbombe_info, Suicide bomb - when used there is a direct yell displayed to nearby players and if cops are nearby you will go wanted. Get through the timer and when it is armed fire the bomb - you only have a small window.
 STRS_inv_item_selbstmordbombe_globalmsg,Allah Hu Akbar infidels
 STRS_bank_rob_titlemsg,$$$$WARNING$$$$ Someone is robbing the bank $$$$WARNING$$$$
+STRS_bank_rob_titlemsg_known,$$$$WARNING$$$$ %1-%2 is robbing the bank $$$$WARNING$$$$
 STRS_bank_rob_lostnomoney,Because of your bank insurance you lost no money but you lost one bank insurance.
 STRS_bank_rob_somemoneylost,The bank has been robbed. You lost $%1 and have $%2 left on your account.
 STRS_bank_rob_allmoneylost,The bank has been robbed. You lost all the money on your account!
@@ -801,6 +802,7 @@ STRS_bank_rob_nosuccess,You escaped too early and didn't get the money!
 STRS_bank_rob_info,You decided to rob the bank. Stay here until you get the money and then get the hell outta here!
 STRS_bank_rob_noweapon,You can't rob the bank without being armed.
 STRS_bank_rob_no,You can't rob the bank at the moment.
+STRS_bank_rob_nomoneylost, The bank has been robbed, but you lost no money because of federal insurance
 STRS_bank_dialog_inventarmoneh,Money in your Inventory: $%1
 STRS_bank_dialoge_accountmoneh,Money in your Account: $%1
 STRS_bank_dialoge_tax,Incl. Taxes:
@@ -937,7 +939,7 @@ STRS_mainmenu_AboutThisMission,About this mission:\n
 	The original scripts are from saharni life handed down from Pogomon. The port was done by EddieV, Additional scripting after the original port done by Gman and S.W.A.T.
 
 STRS_mainmenu_FAQ,Frequently Asked Questions:\n
-	Where can I find information on Takistan? Go to http://tlr.enjin.com
+	Where can I find information on Takistan? Go to http://www.takistanliferevolution.com
 
 STRD_mainmenu_description_close,Close
 STRD_cam_description_header,Free cam

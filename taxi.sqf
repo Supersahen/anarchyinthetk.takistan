@@ -1,3 +1,4 @@
+private["_art"];
 _art = ((_this select 3) select 0);
 
 if (isNil "INV_LocalTaxiKunde" ) then {INV_LocalTaxiKunde = player};
@@ -7,56 +8,39 @@ if (isNil "workplacejob_taxi_kundeactive") then {workplacejob_taxi_kundeactive =
 if (isNil "workplacejob_taxi_active") then {workplacejob_taxi_active = false};
 if (isNil "workplacejob_taxi_serverarray") then {workplacejob_taxi_serverarray = []};
 
-if (_art == "serverloop") then
+private["_i","_warte","_moneh"];
 
-{
+if (_art == "serverloop") then {
 
 while {true} do {
-
-	for [{_i=0}, {_i < (count workplacejob_taxi_serverarray)}, {_i=_i+1}] do
-
-		{
-
-		if (isNull ((workplacejob_taxi_serverarray select _i) select 0)) then
-
-			{
-
-			if (!(isNull ((workplacejob_taxi_serverarray select _i) select 1))) then
-
-				{
-
-				deleteVehicle ((workplacejob_taxi_serverarray select _i) select 1);
-
+	for [{_i=0}, {_i < (count workplacejob_taxi_serverarray)}, {_i=_i+1}] do {
+		if (isNull ((workplacejob_taxi_serverarray select _i) select 0)) then {
+			if (!(isNull ((workplacejob_taxi_serverarray select _i) select 1))) then {
+					deleteVehicle ((workplacejob_taxi_serverarray select _i) select 1);
 				};
 
 			workplacejob_taxi_serverarray set [_i,""];
 			workplacejob_taxi_serverarray = workplacejob_taxi_serverarray - [""];
-
 			};
-
 		};
-
 	sleep 10;
-
 	};
-
 };
 
 
-if (_art == "getajob_taxi") then
+if (_art == "getajob_taxi") then {
 
-{
-
-if (workplacejob_taxi_sperre) exitWith
-
-	{
-
-	player groupChat format [localize "STRS_workplacemission_taxi_alreadyinuse",workplacejob_taxi_sperrzeit];
-
+if (workplacejob_taxi_sperre) exitWith {
+		player groupChat format [localize "STRS_workplacemission_taxi_alreadyinuse",workplacejob_taxi_sperrzeit];
 	};
 
 workplacejob_taxi_active = true;
 workplacejob_taxi_sperre = true;
+
+private[
+		"_startzahl", "_zielzahl", "_start", "_ziel", "_spielerstart",
+		"_taxizeit", "_civ", "_taxiClient", "_markerobj", "_markername"
+	];
 
 while {true} do {
 
@@ -79,10 +63,21 @@ while {true} do {
 
 	_taxizeit = time;
 	_civ 	  = civclassarray select round random(count civclassarray - 1);
-	_O0O0 = player;
-
-	call compile format ["'%1' createUnit [[(_start select 0),(_start select 1),0], group civ_logicunit, ""%2taxikunde = this; this setVehicleVarName """"%2taxikunde""""; this disableAI """"MOVE""""; this disableAI """"TARGET"""";""]; [%2taxikunde] join grpNull; liafu = true; processInitCommands;", _civ, player];
-
+	
+	missionnamespace setVariable [format["%1taxikunde", player], objNull];
+	_taxiClient = objNull;
+	
+	_taxiClient = (group server) createUnit [_civ, [(_start select 0),(_start select 1),0], [], 0, "NONE"];   
+	_taxiClient setVehicleInit format['
+			this setVehicleVarName "%2taxikunde";
+			%2taxikunde = this;
+			this disableAI "MOVE";
+			this disableAI "TARGET";
+		', _civ, player];
+	processInitCommands;
+	
+	publicVariable format["%1taxikunde", player];
+	
 	format["workplacejob_taxi_serverarray + [%1, %1taxikunde];", player] call broadcast;
 
 	_markerobj = createMarkerLocal ["taxikundenmarker",[0,0]];
@@ -99,9 +94,9 @@ while {true} do {
 
 		sleep 1;
 		INV_LocalTaxiKunde = player;
-		call compile format["INV_LocalTaxiKunde = %1taxikunde", player];
+		[] call compile format["INV_LocalTaxiKunde = %1taxikunde", player];
 
-		if ((player != (vehicle player)) and (((vehicle player)) distance INV_LocalTaxiKunde < 30) and ((speed ((vehicle player))) < 2) and (not(workplacejob_taxi_kundeactive))) then
+		if ((player != (vehicle player)) and ((((vehicle player)) distance INV_LocalTaxiKunde) < 30) and ((speed ((vehicle player))) < 2) and (not(workplacejob_taxi_kundeactive))) then
 
 			{
 

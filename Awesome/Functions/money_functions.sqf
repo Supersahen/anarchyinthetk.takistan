@@ -5,7 +5,7 @@ player_get_factory_money = {
 	_player = _this select 0;
 	if (not([_player] call player_human)) exitWith {0};
 	
-	private["_money"];
+	private["_money", "_factory_array", "_factory_name", "_factory_money"];
 	_money = 0;
 	{
 		_factory_array = _x;
@@ -39,7 +39,7 @@ player_get_total_money = {
 	_player = _this select 0;
 	if (not([_player] call player_human)) exitWith {0};
 
-	private["_fac_money", "_priv_money", "_bank_money", "_inv_money"];
+	private["_fac_money", "_priv_money", "_bank_money", "_inv_money", "_total_money"];
 	_fac_money = [_player] call player_get_factory_money;
 	_priv_money = [_player] call player_get_private_storage_money;
 	_bank_money = [_player] call bank_get_value;
@@ -60,7 +60,7 @@ player_lose_factory_money = {
 	if (isNil "_amount") exitWith {0};
 	if (typeName _amount != "SCALAR") exitWith {0};
 	
-	private["_lost_amount"];
+	private["_lost_amount", "_factory_array", "_factory_name", "_factory_money"];
 	_lost_amount = 0;
 	{
 		_factory_array = _x;
@@ -73,6 +73,8 @@ player_lose_factory_money = {
 
 		if (_amount <= 0) exitWith {_amount = 0;};
 	} foreach all_factories;
+	
+	[_player] call factory_save_storage;
 	_amount
 };
 
@@ -85,6 +87,7 @@ player_lose_private_storage_money =  {
 	if (typeName _lost_amount != "SCALAR") exitWith {};
 
 	[_player, "money", -(_lost_amount), "private_storage"] call INV_AddItemStorage;
+	[_player] call player_save_private_storage;
 };
 
 player_lose_inventory_money =  {
@@ -107,7 +110,8 @@ player_lose_money =  {
 	if (not([_player] call player_human)) exitWith {};
 	if (isNil "_amount") exitWith {};
 	if (typeName _amount != "SCALAR") exitWith {};
-
+	
+	private["_fac_money", "_priv_money", "_bank_money", "_inv_money"];
 	_fac_money = [_player] call player_get_factory_money;
 	_priv_money = [_player] call player_get_private_storage_money;
 	_bank_money = [_player] call bank_get_value;

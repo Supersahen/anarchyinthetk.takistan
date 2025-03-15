@@ -1,14 +1,3 @@
-
-broadcast_side_msg = {
-private ["_msg1","_msg2"];
-_msg1 = _this select 0;
-_msg2 = _this select 1;
-
-if(_msg1 =="")  exitWith {};
-if( [player] call player_cop) then { player sidechat format [ "%1",_msg1];}
- else { if(_msg2!="") then{ player sidechat format [ "%1",_msg2];}; };  
-};
-
 broadcast_make_key = {
 	private["_id"];
 	_id = _this select 0;
@@ -18,11 +7,11 @@ broadcast_make_key = {
 };
 
 broadcast_receive = {
-	private["_value"];
+	private["_value","_code"];
 	_code = _this select 1;
 	if (isNil "_code") exitWith{};
 	if (typeName _code != "STRING") exitWith {};
-	call compile _code;
+	[] call compile _code;
 };
 
 broadcast = {
@@ -33,7 +22,44 @@ broadcast = {
 	
 	missionNamespace setVariable [player_broadcast_buffer, _code];
 	publicVariable player_broadcast_buffer;
-	call compile _code;
+	[] call compile _code;
+};
+
+broadcast_server = {
+	private["_code"];
+	_code = _this;
+	if (isNil "_code") exitWith {};
+	if (typeName _code != "STRING") exitWith {};
+	if (isServer) then {
+		[] call compile _code;
+	}else{
+		missionNamespace setVariable [player_broadcast_buffer, _code];
+		publicVariableServer player_broadcast_buffer;
+	};
+};
+
+broadcast_client = {
+	private["_code", "_client"];
+	_code = _this select 0;
+	_client = _this select 1;
+	if (isNil "_code") exitWith {};
+	if (typeName _code != "STRING") exitWith {};
+	missionNamespace setVariable [c2c_server_broadcast_buffer, [_code, str(_client)]];
+	publicVariableServer c2c_server_broadcast_buffer;
+};
+
+broadcast_receive_c2c = {
+	private["_value","_code","_clientS","_client","_owner"];
+	_code = (_this select 1) select 0;
+	_clientS = (_this select 1) select 1;
+	if (isNil "_code") exitWith{};
+	if (typeName _code != "STRING") exitWith {};
+	_client = missionNamespace getVariable [_clientS, objNull];
+	if (isNull _client) exitwith {};
+	_owner = owner _client;
+	
+	missionNamespace setVariable [player_broadcast_buffer, _code];
+	_owner publicVariableClient player_broadcast_buffer;
 };
 
 broadcast_setup = {
@@ -49,6 +75,9 @@ broadcast_setup = {
 	
 	
 	player_broadcast_buffer = [_player_number] call broadcast_make_key;
+	
+	c2c_server_broadcast_buffer = "c2c_server";
+	c2c_server_broadcast_buffer addPublicVariableEventHandler {_this call broadcast_receive_c2c;};
 	
 	private["_i"];
 	_i = 0;

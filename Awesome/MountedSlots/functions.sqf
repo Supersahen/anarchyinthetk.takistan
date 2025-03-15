@@ -97,7 +97,7 @@ mounted_passthrough_keys = [];
 
 mounted_set_heading =
 {
-	private["_direction", "_angle", "_pitch"];
+	private["_direction", "_angle", "_pitch", "_object", "_data", "_vecdx", "_vecdy", "_vecdz", "_vecux", "_vecuy", "_vecuz"];
 	
 	_object = _this select 0;
 	_data = _this select 1;
@@ -134,7 +134,7 @@ mounted_lookup_class = {
 	if (typeName _class != "STRING") exitWith {};
 	
 	private["_entry"];
-	_entry = nil;
+	_entry = "";
 	
 	{
 		private["_centry", "_cclass", "_cslot_name", "_clots"];
@@ -149,19 +149,20 @@ mounted_lookup_class = {
 };
 
 mounted_lookup_class_slot = {
-	private["_class", "_slot_anme"];
+	private["_class", "_slot_anme","_slot_id"];
 	_class = _this select 0;
 	_slot_id = _this select 1;
 	
 	private["_entry"];
 	_entry = [_class] call mounted_lookup_class;
-	if (isNil "_entry") exitWith {nil};
+	if (isNil "_entry") exitWith {""};
+	if ((typeName _entry) != "ARRAY") exitwith {""};
 	
-	if (isNil "_slot_id") exitWith {};
-	if (typeName _slot_id != "STRING") exitWith {};
+	if (isNil "_slot_id") exitWith {""};
+	if (typeName _slot_id != "STRING") exitWith {""};
 	
 	private["_slot_entry"];
-	_slot_entry = nil;
+	_slot_entry = "";
 	
 	{
 		private["_cslot_entry", "_cslot_name"];
@@ -179,22 +180,28 @@ mounted_get_occupants = {
 	private["_vehicle", "_class"]; 
 	_vehicle = _this select 0;
 	
+	if (isNil "_vehicle") exitwith {[]};
+	if (isNull _vehicle) exitwith {[]};
+	
 	_class = (typeOf _vehicle);
 	private["_entry"];
 	_entry = [_class] call mounted_lookup_class;
-	if (isNil "_entry") exitWith {[]};
+//	if (isNil "_entry") exitWith {[]};
+	if ((typeName _entry) != "ARRAY") exitwith {[]};
 	
 	private["_occupants"];
 	_occupants = [];
 	
 	{
-		private["_slot", "_slot_id", "_occupant"];
+		private["_slot", "_slot_id", "_occupant", "_slod_id"];
 		_slot = _x;
 		_slod_id = _slot select mounted_slot_id;
 		_occupant = [_vehicle, _slod_id] call mounted_get_slot_occupant;
-		if (not(isNil "_occupant")) then {
-			_occupants = _occupants + [_occupant];
-		};
+		if (!(isNil "_occupant")) then {
+				if (!(isNull _occupant)) then {
+						_occupants set[(count _occupants), _occupant];
+					};
+			};
 	} forEach (_entry select mounted_slots);
 	
 	_occupants
@@ -208,11 +215,11 @@ mounted_slot_wait = {
 		_slot_id = _this select 2;
 		
 		//player groupChat format["Waiting for death"];
-		waitUntil { not(alive _player) || not(_player getVariable "inMountedSlot")};
+		waitUntil { !(alive _player) || !(_player getVariable "inMountedSlot")};
 
 		//player groupChat format["Wait complete _notAlive = %1, _notInMountedSlot = %2", not(alive _player), not(_player getVariable "inMountedSlot")];
 		_player setVariable ["inMountedSlot", false, true];
-		_player setVariable ["mountedVehicle", nil, true];
+		_player setVariable ["mountedVehicle", objNull, true];
 		
 		private["_occupant"];
 		_occupant = [_vehicle, _slot_id] call mounted_get_slot_occupant;
@@ -228,7 +235,8 @@ mounted_slot_wait = {
 			private["_class", "_slot_entry"];
 			_class = typeOf _vehicle;
 			_slot_entry = [_class, _slot_id] call mounted_lookup_class_slot;
-			if (not(isNil "_slot_entry")) then {
+		//	if (not(isNil "_slot_entry")) then {
+			if ((typeName _slot_entry) == "ARRAY") then {
 				private["_exit"];
 				_exit = (_slot_entry select mounted_slot_exit) select mounted_slot_exit_data;
 				[_player, _vehicle, _exit] call mounted_attach;
@@ -247,7 +255,7 @@ mounted_slot_wait = {
 };
 
 mounted_board_slot = {
-	private["_player", "_vehicle"];
+	private["_player", "_vehicle", "_slot_id"];
 	_player = _this select 0;
 	_vehicle = _this select 1;
 	_slot_id = _this select 2;
@@ -257,9 +265,10 @@ mounted_board_slot = {
 	_class = typeOf _vehicle;
 	
 	_slot_entry = [_class, _slot_id] call mounted_lookup_class_slot;
-	if (isNil "_slot_entry") exitWith {nil};
+//	if (isNil "_slot_entry") exitWith {};
+	if ((typeName _slot_entry) != "ARRAY") exitwith {};
 	
-	private["_offset", "_heading", "_blocked_actions", "_blocked_keys", "_default_action"];
+	private["_offset", "_heading", "_blocked_actions", "_blocked_keys", "_default_action", "_direction_min", "_direction_max"];
 	_offset = ((_slot_entry select mounted_slot_offset) select mounted_slot_offset_data);
 	_heading = ((_slot_entry select mounted_slot_heading) select mounted_slot_heading_data);
 	_blocked_actions = (_slot_entry select mounted_slot_blocked_actions);
@@ -273,6 +282,13 @@ mounted_board_slot = {
 	_player playActionNow _default_action;
 	_player groupChat format["You have boarded a mounted slot in this vehicle. Use Control + E to exit"];
 	
+	if (_vehicle isKindOf "helicopter") then {
+		if (({_vehicle isKindOf _x} count A_R_vehicles) > 0) then {
+			_player groupChat format["This slot can be rappeled from, Use Shift + E to rappel if rope is deployed."];
+		};
+	};
+	
+	
 	_player setVariable ["inMountedSlot", true, true];
 	_player setVariable ["mountedVehicle", _vehicle, true];
 	[_vehicle, _slot_id, _player] call mounted_set_slot_occupant;
@@ -283,7 +299,6 @@ mounted_board_slot = {
 	[_player, _vehicle, _slot_id, _direction_min, _direction_max] call mounted_setup_mouseMoving;
 	[_player, _vehicle, _slot_id] call mounted_slot_wait;
 	titleText ["", "BLACK IN", 2];
-	
 };
 
 mounted_unboard_slot = {
@@ -300,28 +315,57 @@ mounted_unboard_slot = {
 	};
 	
 	_player setVariable ["inMountedSlot", false, true];
-	_player setVariable ["mountedVehicle", nil, true];
-
+	_player setVariable ["mountedVehicle", objNull, true];
+	
+	
+	
 };
 
+mounted_unboard_slot_force = {
+	private["_player"];
+	_player = _this select 0;
+	
+	_player setVariable ["inMountedSlot", false, true];
+	_player setVariable ["mountedVehicle", objNull, true];
+};
 
+mounted_unboard_slot_rappel = {
+	private["_player", "_vehicle", "_slot_id","_class", "_slot_entry", "_exit"];
+	_player = _this select 0;
+	_vehicle = _this select 1;
+	_slot_id = _this select 2;
+	
+	player groupChat "Dropping...";
+	
+	[_player] call mounted_unboard_slot_force;
+	
+	_class = typeOf _vehicle;
+	_slot_entry = [_class, _slot_id] call mounted_lookup_class_slot;
+	_exit = (_slot_entry select mounted_slot_exit) select mounted_slot_exit_data;
+	
+	waitUntil {((getPosATL _player) distance (_vehicle ModelToWorld _exit)) <= 0.1};
+	
+	[0,0,0,[_vehicle, true]] spawn (compile (preprocessFileLineNumbers "Awesome\Rappel\rappel.sqf"));
+};
 
 mounted_get_slot_occupant = {
 	private["_vehicle", "_slot_id"];
 	_vehicle = _this select 0;
 	_slot_id = _this select 1;
 	
-	if (isNil "_slot_id") exitWith {nil};
-	if (typeName _slot_id != "STRING") exitWith {nil};
-	if (isNil "_vehicle") exitWith {nil};
+	if (isNil "_slot_id") exitWith {objNull};
+	if (typeName _slot_id != "STRING") exitWith {objNull};
+	if (isNil "_vehicle") exitWith {objNull};
 	
 	private["_occupant"];
-	_occupant = _vehicle getVariable _slot_id;
-	if (typeName _occupant == "OBJECT") then {
-		_occupant = if (isNull _occupant) then { nil } else { _occupant };
-	};
+	_occupant = objNull;
+	_occupant = _vehicle getVariable [_slot_id, objNull];
+//	if (typeName _occupant == "OBJECT") then {
+//		_occupant = if (isNull _occupant) then { nil } else { _occupant };
+//	};
 	
-	_occupant
+	if (isNil "_occupant") exitwith {objNull};
+	if (isNull _occupant) then {objNull}else{_occupant}
 };
 
 mounted_set_slot_occupant = {
@@ -335,11 +379,17 @@ mounted_set_slot_occupant = {
 	if (typeName _slot_id != "STRING") exitWith {};
 	if (isNil "_vehicle") exitWith {};
 	
-	private["_occupant"];
-	//player groupChat format["typeName _occupant = %1", (typeName _occupant)];
-	if (typeName _occupant == "OBJECT") then {
-		_occupant = if (isNull _occupant) then { nil } else { _occupant };
+	_occupant = if (isNil "_occupant") then {
+		objNull
+	}else{
+		if (typeName _occupant == "OBJECT") then {
+			if (isNull _occupant) then { objNull } else { _occupant }
+		}else{
+			objNull
+		}
 	};
+	
+	//player groupChat format["typeName _occupant = %1", (typeName _occupant)];
 	
 	//player groupChat format["_vehicle = %1, _slot_id = %2, _occupant = %3", _vehicle, _slot_id, _occupant];
 	_vehicle setVariable [_slot_id, _occupant, true];
@@ -362,16 +412,7 @@ mounted_player_inside = {
 };
 
 mounted_player_get_vehicle = {
-	private["_player"];
-	_player = _this select 0;
-	
-	private["_vehicle"];
-	_vehicle = _player getVariable "mountedVehicle";
-
-	if (typeName _vehicle == "OBJECT") then {
-		_vehicle = if (isNull _vehicle) then { nil } else { _vehicle };
-	};
-	_vehicle
+	(_this select 0) getVariable ["mountedVehicle", objNull]
 };
 
 mounted_slot_open = {
@@ -381,9 +422,10 @@ mounted_slot_open = {
 	_slot_id = _this select 1;
 	
 	private["_slot_occupant", "_result"];
+	_slot_occupant = objNull;
 	_slot_occupant = [_vehicle, _slot_id] call mounted_get_slot_occupant;
 	//player groupChat format["_slot_occupant = %1", _slot_occupant];
-	_result = (isNil "_slot_occupant");
+	_result = (isNull _slot_occupant);
 	_result
 };
 
@@ -398,6 +440,7 @@ mounted_vehicle_unlocked = {
 
 
 mounted_add_actions = {
+	private["_vehicle"];
 	_vehicle = _this select 0;
 	//player groupChat format["Adding actions!"];
 	if (isNil "_vehicle") exitWith {};
@@ -406,8 +449,8 @@ mounted_add_actions = {
 	
 	private["_entry"];
 	_entry = [_class] call mounted_lookup_class;
-	if (isNil "_entry") exitWith {};
-	
+//	if (isNil "_entry") exitWith {};
+	if ((typeName _entry) != "ARRAY") exitwith {};
 	
 	private ["_has_mounted_actions"];
 	private["_actions_variable"];
@@ -471,7 +514,7 @@ mounted_keyUpHandler = {
 	_control = _this select 3;
 	_alt = _this select 4;
 	
-	private["_player", "_vehicle", "_slot_id"];
+	private["_player", "_vehicle", "_slot_id", "_blocked_keys"];
 	
 	_player = _data select 0;
 	_vehicle = _data select 1;
@@ -504,7 +547,7 @@ mounted_keyDownHandler = {
 	_control = _this select 3;
 	_alt = _this select 4;
 	
-	private["_player", "_vehicle", "_slot_id"];
+	private["_player", "_vehicle", "_slot_id", "_blocked_keys"];
 	
 	_player = _data select 0;
 	_vehicle = _data select 1;
@@ -517,11 +560,25 @@ mounted_keyDownHandler = {
 		true
 	};
 	
-	if (_key == DIK_E && _control) then {
+	if (_key == DIK_E && _control && !_shift) then {
 		if (speed _vehicle > 30) exitWith {
 			player groupChat format["%1-%2, you cannot exit the vehicle. It's moving too fast", _player, (name _player)];
 		};
 		_data call mounted_unboard_slot;
+	};
+	if (_key == DIK_E && _shift && !_control) then {
+		
+		if !(_vehicle isKindOf "helicopter") exitwith {
+			player groupChat format["%1-%2, you cannot rappel out of this vehicle", _player, (name _player)];
+		};
+		if (({_vehicle isKindOf _x} count A_R_vehicles) <= 0) exitwith {
+			player groupChat format["%1-%2, you cannot rappel out of this helicopter", _player, (name _player)];
+		};
+		if !(_vehicle getVariable [A_R_DEPLOY_V, false]) exitwith {
+			player groupChat format["%1-%2, you cannot rappel out of this helicopter, ropes not deployed", _player, (name _player)];
+		};
+		
+		_data spawn mounted_unboard_slot_rappel;
 	};
 	
 	if (_key in (actionKeys "ReloadMagazine")) then {
@@ -540,7 +597,7 @@ mounted_keyDownHandler = {
 };
 
 mounted_setup_keyDown = {
-	private["_data"];
+	private["_data", "_display"];
 	_data = _this;
 	
 	disableSerialization;
@@ -552,6 +609,7 @@ mounted_setup_keyDown = {
 
 mounted_remove_keyDown = {
 	disableSerialization;
+	private["_display"];
     _display = findDisplay 46;
 	if (not(isnil "mounted_keyDownHandler_id")) then {
 		_display displayRemoveEventHandler  ["keyDown", mounted_keyDownHandler_id];
@@ -566,7 +624,7 @@ mounted_remove_keyDown = {
 mounted_setup_keyUp = {
 	private["_data"];
 	_data = _this;
-	
+	private["_display"];
 	disableSerialization;
     _display = findDisplay 46;
 	if ( isnil "mounted_keyUpHandler_id" ) then {
@@ -576,6 +634,7 @@ mounted_setup_keyUp = {
 
 mounted_remove_keyUp = {
 	disableSerialization;
+	private["_display"];
     _display = findDisplay 46;
 	if (not(isnil "mounted_keyUpHandler_id")) then {
 		_display displayRemoveEventHandler  ["keyUp", mounted_keyUpHandler_id];
@@ -585,7 +644,7 @@ mounted_remove_keyUp = {
 
 
 mounted_mouseMoving_handler = {
-	private["_data", "_player", "_vehicle", "_slot_id", "_mouse_delta"];
+	private["_data", "_this", "_player", "_vehicle", "_slot_id", "_mouse_delta", "_r_delta"];
 	
 	_data = _this select 1;
 	_this = _this select 0;
@@ -649,6 +708,7 @@ mounted_setup_mouseMoving = {
 	private["_data"];
 	_data = _this;
 	disableSerialization;
+	private["_display"];
     _display = findDisplay 46;
 	if ( isnil "mounted_mouseMoving_id" ) then {
 		mounted_mouseMoving_id = _display displayAddEventHandler  ["mouseMoving", format["[_this, %1] call mounted_mouseMoving_handler", _data]];
@@ -657,6 +717,7 @@ mounted_setup_mouseMoving = {
 
 mounted_remove_mouseMoving = {
 	disableSerialization;
+	private["_display"];
     _display = findDisplay 46;
 	if (not(isnil "mounted_mouseMoving_id")) then {
 		_display displayRemoveEventHandler  ["mouseMoving", mounted_mouseMoving_id];

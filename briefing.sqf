@@ -104,14 +104,14 @@ Address: tlr.ts.nfoservers.com<br/>
 Port: (Default)
 Passwork: (No Password)
 <br/>
-Official Website: http://TLR.enjin.com<br/>
+Official Website: http://www.takistanliferevolution.com<br/>
 Join the forums, make suggestions and voice complaints!<br/>
 <br/>
 <br/>
 Original scripts by Issetea and Fewo<br/>
 Additional life scripts by Pogoman, Gman, TeeTime and HarryWorner<br/>
 Ported to OA by EddieV, ported to Takistan by Destructo and CrazyMonkey<br/>
-Current version by Trotsky, iShOoTyOuNoW, Marinesharp, M5iC, Droo_k6, Micovery<br/>
+Current version by Trotsky, M5iC, Droo_k6, Micovery and chill0r<br/>
 <br/>
 Special thanks to Eddie from GC!<br/>
 "
@@ -138,7 +138,7 @@ Please report bugs to admins!<br/>
 <br/>
 If you require help please visit the forums or join teamspeak 3.
 <br/>
-Website: http://TLR.enjin.com<br/>
+Website: http://www.takistanliferevolution.com<br/>
 Teamspeak 3: tlr.ts.nfoservers.com<br/>
 <br/>
 We look forward to hearing from you!<br/>
@@ -175,9 +175,10 @@ player createDiaryRecord ["controls",
 	Cops can set bounties, release jailed civilians and more. When accessed in a vehicle, choosing Sat Cam in cop menu gives an overhead satellite view of the map.
 	<br/>
 	<br>
-	Ctrl + F (in a vehicle): Toggle Siren On/Off (cops only)<br/>
-	Ctrl + G (in a vehicle as driver): Turn on/off speedgun (cops only)<br/>
-	Ctrl + H (in a vehicle): Activate Police Horn (cops only)<br/>
+	Cop Only<br/>
+	Ctrl + F (in a vehicle): Toggle Siren On/Off<br/>
+	Ctrl + G (in a vehicle as driver): Turn on/off Speed Radar<br/>
+	Ctrl + H (in a vehicle): Activate Police Horn<br/>
 	Police can turn on a siren while driving vehicles to signal to civilians to pull over.<br>
 	<br>
 	<br/>
@@ -243,7 +244,7 @@ player createDiaryRecord ["stun",
 	Full- Protects whole body<br/>
 	<br/>
 	Stun rounds will not effect cops<br/>
-	You will only be ejected from a vehicle if shot with a stun round if you are on a vehicle like a bike or atv<br/>
+	You will only be ejected from a vehicle if shot with a stun round if you are on a vehicle like a bike or atv, or on a mounted seat<br/>
 	<br/>
 	Melee<br/>
 	Different kinds of weapons have different animations and effects now<br/>
@@ -507,7 +508,7 @@ player createDiaryRecord ["donations",
 [
 "Donations",
 "
-Donate at http://tlr.enjin.com for extra starting money! More donator rewards coming soon, special shops and private houses!<br/>
+Donate at http://www.takistanliferevolution.com for extra starting money! More donator rewards coming soon<br/>
 <br/>
 "
 ]

@@ -1,6 +1,6 @@
 
 P_Dialog_Full = {
-	private ["_cam", "_IA", "_index", "_item", "_cost", "_lic", "_armorb", "_armors", "_texts", "_class", "_cfg", "_pack", "_DFML", "_n", "_c", "_veh", "_selected_maps"];
+	private ["_cam", "_IA", "_index", "_item", "_cost", "_lic", "_armorb", "_armors", "_texts", "_class", "_cfg", "_pack", "_DFML", "_n", "_c", "_veh", "_selected_maps","_t_cfg","_t_count"];
 
 	disableSerialization;
 	
@@ -17,10 +17,8 @@ P_Dialog_Full = {
 	P_Preview_Pos = getPosATL P_Preview_Logic;
 	P_Preview_Dir = getDir P_Preview_Logic;
 	
-	liafu = true;
-	
 	P_Preview_Unit = P_Preview_Class createVehicleLocal (P_Preview_Pos);
-	P_Preview_Unit setVehicleInit format["liafu = true; this setVehicleVarName '%1_CP_Dummy'; %1_CP_Dummy = this; this lock true; this allowDamage false;", player];
+	P_Preview_Unit setVehicleInit format["this setVehicleVarName '%1_CP_Dummy'; %1_CP_Dummy = this; this lock true; this allowDamage false;", player];
 	processInitCommands;
 	P_Preview_Unit setDir P_Preview_Dir;
 	P_Preview_Unit setpos P_Preview_Pos;
@@ -40,6 +38,7 @@ P_Dialog_Full = {
 	_cam cameraEffect ["internal", "front"];
 	
 	_texts = [];
+	
 	//_texts		= C_selectedarray select 10;
 	_t_cfg			= getArray (configFile >> "CfgVehicles" >> P_Preview_Class >> "hiddenselections");
 	_t_count		= count _t_cfg;
@@ -405,7 +404,7 @@ P_buy = {
 		for [{_c = 0}, {_c < (count P_T_P) }, {_c=_c+1}] do {
 			_x = P_T_P select _c;
 			if ( (typeName _x) == "STRING" ) then {
-				(vehicle player) setVehicleInit format["liafu = true; this setObjectTexture %1", [_c, _x]];
+				(vehicle player) setVehicleInit format["this setObjectTexture %1", [_c, _x]];
 				processInitCommands;
 			};
 		};
@@ -433,7 +432,7 @@ P_r_buy = {
 	
 	_n = 0;
 	{
-		(vehicle player) setVehicleInit format["liafu = true; this setObjectTexture %1", [_n, _x]];
+		(vehicle player) setVehicleInit format["this setObjectTexture %1", [_n, _x]];
 		processInitCommands;
 		_n = _n + 1;
 	} forEach _cfg2;

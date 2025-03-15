@@ -2,7 +2,7 @@
 
 disableSerialization;
 
-private["_art"];
+private["_art", "_array", "_moneh", "_zusatzString"];
 
 _array = _this select 3;
 _art   = _array select 0;
@@ -23,11 +23,10 @@ if (_art == "bail") then {
 	};
 };
 
-
-
 if (_art == "spielerliste") then {
 
 	if (!(createDialog "liste_1_button")) exitWith {hint "Dialog Error!";};
+	private["_DFML"];
 	_DFML = findDisplay -1;
 	
 	private["_dead_wait_time"];
@@ -36,17 +35,21 @@ if (_art == "spielerliste") then {
 	lbClear 1;
 	lbClear (_DFML displayCtrl 1);
 	
-	private["_total_money", "_private_money", "_factory_money", "_cash"];
+	private["_total_money", "_private_money", "_factory_money", "_cash", "_bank","_trennlinie", "_playTime"];
 	_total_money = [player] call player_get_total_money;
 	_private_money = [player] call player_get_private_storage_money;
 	_factory_money = [player] call player_get_factory_money;
 	_cash = [player, 'money'] call INV_GetItemAmount;
 	_bank = [player] call bank_get_value;
+	
+	_playTime = ([player] call ftf_getPlayTime) / 3600;
+	
 	_trennlinie = "---------------------------------------------";
 	(_DFML displayCtrl 1) 	lbAdd format ["Date:     %3.%2.%1", (date select 0), (date select 1), (date select 2)];
 	(_DFML displayCtrl 1)	lbAdd format ["Runtime: %1 minutes", (round(time/60))];
 	(_DFML displayCtrl 1)	lbAdd _trennlinie;
 	(_DFML displayCtrl 1)	lbAdd localize "STRS_statdialog_playerinfo";
+	(_DFML displayCtrl 1)	lbAdd format ["Playtime: %1 Hours", _playTime];
 	(_DFML displayCtrl 1)	lbAdd format ["Total money: $%1", strM(_total_money)];
 	(_DFML displayCtrl 1)	lbAdd format ["Money: $%2", localize "STRS_statdialog_health", strM(_cash)];
 	(_DFML displayCtrl 1)	lbAdd format ["Savings: $%2", localize "STRS_statdialog_health", strM(_bank)];
@@ -65,6 +68,8 @@ if (_art == "spielerliste") then {
 
 	(_DFML displayCtrl 1)	lbAdd _trennlinie;
 	(_DFML displayCtrl 1)	lbAdd localize "STRS_statdialog_licenselist";
+	
+	private["_i","_workers"];
 	
 	for [{_i=0}, {_i < (count INV_Licenses)}, {_i=_i+1}] do {
 		if (((INV_Licenses select _i) select 0) call INV_HasLicense) then
@@ -92,14 +97,24 @@ if (_art == "spielerliste") then {
 		(_DFML displayCtrl 1)	lbAdd (playerstringarray select MayorNumber);
 	};
 	
-	_next_president_election = server getVariable "next_president_election";
-	if (not(isnil "_next_president_election")) then { if (typeName _next_president_election == "SCALAR") then { if (_next_president_election > 0) then {
-		private ["_s"];
-		_s = "";
-		if (_next_president_election > 1) then { _s = "s";};
-		
-		(_DFML displayCtrl 1)	lbAdd format["Next election results in %1 minute%2", _next_president_election, _s]; 
-	};};}; 
+
+
+//	_next_president_election = server getVariable "next_president_election";
+//	if (not(isnil "_next_president_election")) then {
+	
+	private["_next_president_election"];
+	_next_president_election = server getVariable ["next_president_election", false];
+	if ((typeName _next_president_election) != "BOOL") then {
+		if ((typeName _next_president_election) == "SCALAR") then {
+			if (_next_president_election > 0) then {
+				private ["_s"];
+				_s = "";
+				if (_next_president_election > 1) then { _s = "s";};
+				(_DFML displayCtrl 1)	lbAdd format["Next election results in %1 minute%2", _next_president_election, _s]; 
+			};
+		};
+	};
+
 	
 	(_DFML displayCtrl 1)	lbAdd _trennlinie;
 	(_DFML displayCtrl 1)	lbAdd localize "STRS_statdialog_chief";
@@ -108,14 +123,20 @@ if (_art == "spielerliste") then {
 		(_DFML displayCtrl 1)	lbAdd (playerstringarray select chiefNumber);
 	};
 	
-	_next_chief_election = server getVariable "next_chief_election";
-	if (not(isnil "_next_chief_election")) then { if (typeName _next_chief_election == "SCALAR") then { if (_next_chief_election > 0) then {
-		private ["_s"];
-		_s = "";
-		if (_next_chief_election > 1) then { _s = "s";};
-		
-		(_DFML displayCtrl 1)	lbAdd format["Next election results in %1 minute%2", _next_chief_election, _s]; 
-	};};}; 
+
+	private["_next_chief_election"];
+	_next_chief_election = server getVariable ["next_chief_election", false];
+	if ((typeName _next_chief_election) != "BOOL") then {
+		if ((typeName _next_chief_election) == "SCALAR") then {
+			if (_next_chief_election > 0) then {
+					private ["_s"];
+					_s = "";
+					if (_next_chief_election > 1) then { _s = "s";};
+					
+					(_DFML displayCtrl 1)	lbAdd format["Next election results in %1 minute%2", _next_chief_election, _s]; 
+				};
+			};
+		}; 
 
 
 	(_DFML displayCtrl 1) lbAdd _trennlinie;
@@ -171,7 +192,8 @@ if (_art == "spielerliste") then {
 			_gang = [_gang_id] call gangs_lookup_id;
 			//player groupChat format["_gang = %1", _gang];
 			
-			if (isNil "_gang") then {
+//			if (isNil "_gang") then {
+			if ((typename _gang) != "ARRAY") then {
 				(_DFML displayCtrl 1) lbAdd format["    %1 - (Abandoned)", _gang_area_name];
 			}
 			else {
@@ -184,9 +206,9 @@ if (_art == "spielerliste") then {
 	
 	(_DFML displayCtrl 1) lbAdd _trennlinie;
 	(_DFML displayCtrl 1) lbAdd "B A N K:";
-	(_DFML displayCtrl 1) lbAdd (format ["Est. total funds in the main bank safe's: $%1", strM(robpoolsafe1 + robpoolsafe2 + robpoolsafe3)]);
+//	(_DFML displayCtrl 1) lbAdd (format ["Est. total funds in the main bank safe's: $%1", strM(robpoolsafe1 + robpoolsafe2 + robpoolsafe3)]);
 
-	if(!local_useBankPossible)then{(_DFML displayCtrl 1) lbAdd (format ["Bank lockout time remaining: %1 seconds.", round rblock])};
+	if !([player] call bankRob_bankUsable)then{(_DFML displayCtrl 1) lbAdd (format ["Bank lockout time remaining: %1 seconds.", round rblock])};
 
 	(_DFML displayCtrl 1) lbAdd _trennlinie;
 	(_DFML displayCtrl 1) lbAdd (format ["W O R K P L A C E S"]);
@@ -220,7 +242,8 @@ if (_art == "spielerliste") then {
 
 	(_DFML displayCtrl 1) lbAdd _trennlinie;
 	(_DFML displayCtrl 1) lbAdd "F O O D  S T O C K S:";
-
+	
+	private["_stock"];
 	_stock = ["boar", (shop1 call INV_getshopnum)] call INV_GetStock;
 	_stock = _stock + (["boar", (shop2 call INV_GetShopNum)] call INV_GetStock);
 	_stock = _stock + (["boar", (shop3 call INV_GetShopNum)] call INV_GetStock);
@@ -276,12 +299,13 @@ if (_art == "spielerliste") then {
 	(_DFML displayCtrl 1)	lbAdd _trennlinie;
 	(_DFML displayCtrl 1)	lbAdd localize "STRS_statdialog_playerlist";
 
-	private ["_i"];
+	private ["_i","_player_variable_name"];
 	_i = 0;
+	_player_variable_name = "";
 	while { _i < (count playerstringarray) } do {
 		private["_player", "_player_variable_name"];
 		_player_variable_name = playerstringarray select _i;
-		_player = missionNamespace getVariable _player_variable_name;
+		_player = missionNamespace getVariable [_player_variable_name, objNull];
 		
 		if ([_player] call player_human) then {
 			private["_label_text", "_index"];
@@ -298,13 +322,18 @@ if (_art == "spielerliste") then {
 	(_DFML displayCtrl 1)	lbAdd _trennlinie;
 	(_DFML displayCtrl 1)	lbAdd "W A N T E D:";
 	
-	private["_i"];
+	private["_i","_player_variable"];
 	_i = 0;
+	
+	_player_variable_name = "";
+	_player_variable = objNull;
+	
 	while { _i < (count playerstringarray) } do {
 		private["_player_variable_name", "_player_variable"];
 		_player_variable_name = playerstringarray select _i;
-		_player_variable = missionNamespace getVariable _player_variable_name;
-
+		_player_variable = missionNamespace getVariable [_player_variable_name, objNull];
+		
+		if !(isNull _player_variable) then {
 		if (not([_player_variable] call player_cop) && ([_player_variable] call player_get_wanted)) then {
 			private["_bounty", "_reasons"];
 			_reasons = [_player_variable] call player_get_reason; 
@@ -321,6 +350,8 @@ if (_art == "spielerliste") then {
 			};
 			(_DFML displayCtrl 1) lbAdd _trennlinie;
 		};
+		};
+		
 		_i = _i + 1;
 	};
 
@@ -331,6 +362,7 @@ if (_art == "spielerliste") then {
 if (_art == "inventorycheck") then {
 	if (!(createDialog "liste_1_button")) exitWith {hint "Dialog Error!";};
 	
+	private["_DFML","_licensearray","_inventararray","_civobj","_waffenarray","_magazinarray","_trennlinie","_lizenz","_objekt","_objektname","_anzahl","_scriptname","_index"];
 	_DFML = findDisplay -1;
 	
 	lbClear 1;
@@ -391,6 +423,7 @@ if (_art == "inventorysteal") then {
 if (_art == "gesetz") then {
 	if (!(createDialog "gesetzdialog")) exitWith {hint "Dialog Error!";};
 	
+	private["_DFML", "_index", "_selected"];
 	_DFML = findDisplay -1;
 		
 	lbClear 1;
@@ -412,6 +445,7 @@ if (_art == "gesetz") then {
 if (_art == "coplog") then {
 	if (!(createDialog "liste_1_button")) exitWith {hint "Dialog Error!";};
 	
+	private["_DFML", "_trennlinie"];
 	_DFML = findDisplay -1;
 	
 	lbClear 1;
@@ -452,6 +486,8 @@ if (_art == "coplog") then {
 if (_art == "wahlen") then {
 	if (!(createDialog "wahldialog")) exitWith {hint "Dialog Error!";};
 	
+	private["_DFML"];
+	
 	_DFML = findDisplay -1;
 	
 	lbClear 1;
@@ -470,7 +506,7 @@ if (_art == "chief") then {
 	lbClear 1;
 	lbClear (_DFML displayCtrl 1);
 	
-	private["_c", "_index"];
+	private["_c", "_index", "_player_variable_name"];
 	_c = 0;
 	_player_variable_name = "";
 	_index = -1;
@@ -478,9 +514,11 @@ if (_art == "chief") then {
 	for [{_c=0}, {_c < (count playerstringarray)}, {_c=_c+1}] do {
 		private["_player_variable_name", "_player_variable"];
 		_player_variable_name = playerstringarray select _c;
-		_player_variable = missionNamespace getVariable _player_variable_name;
+		_player_variable = missionNamespace getVariable [_player_variable_name, objNull];
 	
-		if (([_player_variable] call player_exists)) then {
+//		if (([_player_variable] call player_exists)) then {
+		if !(isNil "_player_variable") then {
+		if !(isNull _player_variable) then {
 			private["_player_cop"];
 			_player_cop = [_player_variable] call player_cop;
 			if (not(_player_cop)) exitWith {};
@@ -489,6 +527,7 @@ if (_art == "chief") then {
 			_player_name = (name _player_variable);
 			_index = lbAdd [1, format ["%1 - (%2)", _player_variable_name, _player_name]];
 			lbSetData [1, _index, format["%1", _c]];
+		};
 		};
 	};
 };
@@ -502,17 +541,19 @@ if (_art == "steuern") then {
 	lbClear (_DFML displayCtrl 1);
 	
 	sliderSetSpeed [12, 1, 5];
-	sliderSetRange [12, 0, 30];
+	sliderSetRange [12, 1, 25];
 	sliderSetPosition [12,((INV_ItemTypeArray select 0) select 2)];
-	sliderSetSpeed [22, 1, 5];		sliderSetRange [22, 1, 30];
+	sliderSetSpeed [22, 1, 5];		
+	sliderSetRange [22, 1, 30];
 	sliderSetPosition [22,((INV_ItemTypeArray select 1) select 2)];
-	sliderSetSpeed [32, 1, 5];				sliderSetRange [32, 1, 30];
+	sliderSetSpeed [32, 1, 5];				
+	sliderSetRange [32, 1, 25];
 	sliderSetPosition [32,((INV_ItemTypeArray select 2) select 2)];
 	sliderSetSpeed [42, 1, 5];
-	sliderSetRange [42, 0, 30];
+	sliderSetRange [42, 1, 25];
 	sliderSetPosition [42,((INV_ItemTypeArray select 3) select 2)];
 	sliderSetSpeed [52, 1, 5];
-	sliderSetRange [52, 0, 30];
+	sliderSetRange [52, 1, 25];
 	sliderSetPosition [52,bank_tax];
 	while {ctrlVisible 1032} do {
 		ctrlSetText [11, format[localize "STRS_dialogandere_steuerdialog_itemsteuer", strN((round(sliderPosition 12)))]];
@@ -536,31 +577,7 @@ if (_art == "distribute") then {
 	if (!(createDialog "distribute")) exitWith {hint "Dialog Error!"};
 };
 
-if (_art == "impound") then {
-	if (!(createDialog "distribute")) exitWith {hint "Dialog Error!"};
-	_DFML = findDisplay -1;
-	
-	lbClear 1;
-	lbClear (_DFML displayCtrl 1);
-
-	private "_j"; 
-	ctrlSetText [3, format["Retrieve impounded vehicle ($%1)", strM(impoundpay)]];
-
-	private["_vehicles"];
-	_vehicles = [player] call vehicle_list;
-	for [{_j=0}, {_j < (count _vehicles)}, {_j=_j+1}] do {
-		_vehicle = (_vehicles select _j);
-		if (!isNull _vehicle and _vehicle distance impoundarea1 < 200) then {
-			_index = (_DFML displayCtrl 1)	lbAdd format["%1 (%2)", _vehicle, typeof _vehicle];
-			(_DFML displayCtrl 1)	lbSetData [_index, format["%1", _vehicle]];
-		};
-	};
-	buttonSetAction [2, "[lbData [1, (lbCurSel 1)],""buy""] call A_SCRIPT_IMPOUND;"];
-};
-
-
-
 if (_art == "pmc_whitelist") then {
-	if (not(ischief)) exitWith { player groupChat "Cannot access PMC whitelist: You are not the police chief";};
+	if (!(ischief)) exitWith { player groupChat "Cannot access PMC whitelist: You are not the police chief";};
 	["PMC_1"] spawn A_WBL_F_DIALOG_INIT;
 };

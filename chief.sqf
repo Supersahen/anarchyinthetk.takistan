@@ -1,13 +1,20 @@
+private["_this","_art"];
 _this = _this select 3;
 _art  = _this select 0;
-_moneh = [player, 'money'] call INV_GetItemAmount;
+
+private["_spielernum", "_kandidatnum", "_waehlernum", "_item", "_mag", "_weap", "_vcl", "_bank", "_i", "_arr", "_newArray"];
 
 if (_art == "ClientWahlc") then {
 	if (isNil("WahlChief")) then { WahlChief = false;};
 	if (WahlChief) exitWith { player groupChat "You just voted."; };
-	_spielernum   = call compile (_this select 1);
+	_spielernum   = [] call compile (_this select 1);
+	
+	private["_player_string","_player"];
+	_player_string = (playerstringarray select _spielernum);
+	_player = missionNamespace getVariable [_player_string, objNull];
+	
 	format["if (isServer) then {[0,1,2,[""ServerChief"", %1, %2]] execVM ""chief.sqf"";};", _spielernum, rolenumber] call broadcast;
-	player groupChat format[localize "STRS_chief_votedfor", (playerstringarray select _spielernum)];
+	player groupChat format[localize "STRS_chief_votedfor", _player_string];
 	WahlChief = true;
 	sleep 15;
 	WahlChief = false;
@@ -21,8 +28,11 @@ if (_art == "ServerChief") then {
 		_arr = (WahlArrayc select _i);
 		if (_waehlernum in _arr) exitWith {_arr = _arr - [_waehlernum];	WahlArrayc SET [_i, _arr];};
 	};
-
-	WahlArrayc SET [_kandidatnum, ((WahlArrayc select _kandidatnum )+ [_waehlernum])];
+	
+	_newArray = (WahlArrayc select _kandidatnum);
+	_newArray set[count _newArray, _waehlernum];
+	
+//	WahlArrayc SET [_kandidatnum, ((WahlArrayc select _kandidatnum )+ [_waehlernum])];
 };
 
 

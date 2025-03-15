@@ -9,9 +9,10 @@ showWatch     = 1;
 debriefing    = 1;
 respawn       = 3;
 respawnDelay  = 30;
+respawnDialog = 0;
 disabledAI    = 1;
-respawnDialog = false;
 
+onPauseScript = "Awesome\client\pause.sqf";
 // Define PMC Custom GPS Skin
 onMinimapScript[] = {"BIS_fnc_customGPS_Spawn"};
 
@@ -22,8 +23,6 @@ class CfgSounds  {
 	#include "sounds.hpp"
 };
 
-
-
 #include "Awesome\Dialogs\Essentials\RscDefines.hpp"
 #include "Awesome\Dialogs\Essentials\DialogColorConstants.hpp"
 #include "Awesome\Dialogs\Essentials\DialogColorScheme.hpp"
@@ -32,7 +31,7 @@ class CfgSounds  {
 
 #include "Awesome\Dialogs\Custom_Dialogs.hpp"
 
-#include "Awesome\R3F\desc_include.h"
+#include "Awesome\R3F\R3F_LOG\transporteur\dlg_contenu_vehicule.h"
 #include "Awesome\Retributions\retributions.hpp"
 #include "Awesome\Shops\shops.hpp"
 #include "Awesome\MyStats\loading.hpp"
@@ -62,10 +61,6 @@ class CfgSounds  {
 #include "civmenu.hpp"
 
 #include "plantclass.hpp"
-
-//#include "CodePad.hpp"
-
-#include "gcam_component.hpp"
 
 #include "adminconsoldesc.hpp"
 

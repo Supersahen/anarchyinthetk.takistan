@@ -1,6 +1,6 @@
 P_init =
 {
-private ["_h", "_n"];
+private ["_h", "_n", "_c"];
 
 	_h = [] execVM "Awesome\Paint\P_dialog_functions.sqf";
 	waituntil {scriptDone _h};
@@ -73,35 +73,15 @@ private ["_h", "_n"];
 	];
 	
 	
-	// Initialize paint shop variables
-	if (isNil "ps_1_s") then {ps_1_s = objNull};
-	if (isNil "ps_1_flag1") then {ps_1_flag1 = objNull};
-	if (isNil "ps_1_flag2") then {ps_1_flag2 = objNull};
-	if (isNil "ps_2_s") then {ps_2_s = objNull};
-	if (isNil "ps_2_flag1") then {ps_2_flag1 = objNull};
-	if (isNil "ps_2_flag2") then {ps_2_flag2 = objNull};
-	if (isNil "ps_3_s") then {ps_3_s = objNull};
-	if (isNil "ps_3_flag1") then {ps_3_flag1 = objNull};
-	if (isNil "ps_3_flag2") then {ps_3_flag2 = objNull};
-	if (isNil "ps_4_s") then {ps_4_s = objNull};
-	if (isNil "ps_4_flag1") then {ps_4_flag1 = objNull};
-	if (isNil "ps_4_flag2") then {ps_4_flag2 = objNull};
-	if (isNil "ps_5_s") then {ps_5_s = objNull};
-	if (isNil "ps_5_flag1") then {ps_5_flag1 = objNull};
-	if (isNil "ps_5_flag2") then {ps_5_flag2 = objNull};
-	if (isNil "ps_6_s") then {ps_6_s = objNull};
-	if (isNil "ps_6_flag1") then {ps_6_flag1 = objNull};
-	if (isNil "ps_6_flag2") then {ps_6_flag2 = objNull};
-
 	Paint_Shops =
 	[
 		// Shop spawn, flag1, flag2
-		[ps_1_s, ps_1_flag1, ps_1_flag2],
-		[ps_2_s, ps_2_flag1, ps_2_flag2],
-		[ps_3_s, ps_3_flag1, ps_3_flag2],
-		[ps_4_s, ps_4_flag1, ps_4_flag2],
-		[ps_5_s, ps_5_flag1, ps_5_flag2],
-		[ps_6_s, ps_6_flag1, ps_6_flag2]
+		[ps_1_s, ps_1_flag1],
+		[ps_2_s, ps_2_flag1],
+		[ps_3_s, ps_3_flag1],
+		[ps_4_s, ps_4_flag1],
+		[ps_5_s, ps_5_flag1],
+		[ps_6_s, ps_6_flag1]
 	];
 	
 	P_cost = 25000;
@@ -109,3 +89,4 @@ private ["_h", "_n"];
 };
 
 
+[] spawn P_init;

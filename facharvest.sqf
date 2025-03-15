@@ -1,7 +1,3 @@
-if (isNil "stats_init_variable") then {
-    waitUntil {!isNil "stats_init_variable"};
-};
-
 ["INV_Fabrikowner", []] call stats_init_variable;
 
 INV_FarmItemArray =
@@ -20,9 +16,6 @@ INV_FarmItemArray =
     [[["quarry1",150]],"sand",20,10,["truck"]],
     [[["quarry2",150]],"sand",20,10,["truck"]],
     [[["quarry3",150]],"sand",20,10,["truck"]]
-    //[[["farmarea1",70]],"getreide",20,10,["tractor"]],
-    //[[["farmarea2",70]],"getreide",20,10,["tractor"]],
-    //[[["farmarea3",70]],"getreide",20,10,["tractor"]]
 ];
 
 Miningarray =

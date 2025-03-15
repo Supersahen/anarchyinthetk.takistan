@@ -2,6 +2,7 @@ if (!(isNil "armoredsuv_functions")) exitWith {};
 
 armored_suv_close_minigun =
 {
+	private["_vehicle"];
 	_vehicle = _this select 0;
 	_vehicle animate["HideGun_01",1];
 	_vehicle animate["HideGun_02",1];
@@ -14,6 +15,7 @@ armored_suv_close_minigun =
 
 armored_suv_open_minigun =
 {
+	private["_vehicle"];
 	_vehicle = _this select 0;
 	_vehicle animate["HideGun_01",0];
 	_vehicle animate["HideGun_02",0];
@@ -26,6 +28,7 @@ armored_suv_open_minigun =
 
 armored_suv_is_minigun_open =
 {
+	private["_vehicle","_is_minigun_open"];
 	_vehicle = _this select 0;
 	_is_minigun_open = _vehicle getVariable "minigun_open";
 	if (isNil "_is_minigun_open") exitWith { false };
@@ -35,6 +38,7 @@ armored_suv_is_minigun_open =
 
 armored_suv_add_actions = 
 {
+	private["_vehicle"];
 	_vehicle = _this select 0;
 	
 	private ["_has_suv_actions"];
@@ -43,7 +47,7 @@ armored_suv_add_actions =
 	if (isNil "_has_suv_actions") then { _has_suv_actions = false;}; 
 	if (_has_suv_actions) exitWith {};
 	
-	player groupChat format["Adding SUV Actions"];
+//	player groupChat format["Adding SUV Actions"];
 	_vehicle addaction ["Open Minigun","noscript.sqf",'[_this select 0] call armored_suv_open_minigun;',1,false,true,"","([player, _target] call vehicle_owner) && !([_target] call armored_suv_is_minigun_open)"];
 	_vehicle addaction ["Close Minigun","noscript.sqf",'[_this select 0] call armored_suv_close_minigun;',1,false,true,"","([player, _target] call vehicle_owner) && ([_target] call armored_suv_is_minigun_open)"];
 	

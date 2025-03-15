@@ -65,7 +65,7 @@ C_shop_buy = {
 
 // called for the switch from a shop action, sets up everything then calls the C_change function
 C_change_shop = {
-	private ["_c_array", "_moneh", "_side", "_exit", "_c_name", "_c_class", "_c_display", "_c_side", "_c_fac", "_c_bool", "_c_cost", "_c_lic", "_i", "_license", "_haslic_i"];
+	private ["_c_array", "_shopnum", "_moneh", "_side", "_exit", "_c_name", "_c_class", "_c_display", "_c_side", "_c_fac", "_c_bool", "_c_cost", "_c_lic", "_i", "_license", "_haslic_i"];
 
 	
 	_c_array = _this select 0;
@@ -182,6 +182,19 @@ C_change_load = {
 	([player, _class, true] call C_change)
 };
 
+// Transfers damage from old to new unit
+C_transferDamage = {
+	private["_old", "_new"];
+	_old = _this select 0;
+	_new = _this select 1;
+	
+	_new setDamage (damage _old);
+	
+	[_old] call A_fnc_EH_remove;
+	[_new] call A_fnc_EH_init;
+};
+	
+
 // Replacing unit with new class
 C_change = {
 	["player_rejoin_camera_complete"] call player_wait;
@@ -189,7 +202,7 @@ C_change = {
 	if (C_changing) exitwith {player groupchat "C ERROR: already changing";};
 	C_changing = true;
 	
-	private ["_class", "_oldUnit", "_rating", "_score", "_rank", "_damage", "_dummyUnit", "_newUnit", "_Gleader", "_x", "_c", "_uid", "_exit"];
+	private ["_class", "_oldUnit", "_rating", "_score", "_rank", "_damage", "_dummyUnit", "_newUnit", "_Gleader", "_x", "_c", "_uid", "_exit", "_sarmor", "_mask"];
 	
 	private["_first_time"];
 	_oldUnit = _this select 0;
@@ -216,23 +229,22 @@ C_change = {
 		titleText ["Clothes - Failed", "BLACK IN", 0];
 	};
 	
-	if (not([_oldUnit] call player_human)) exitWith { call _failed_change;};
+	if (not([_oldUnit] call player_human)) exitWith { [] call _failed_change;};
 	
 	if ((_class in pmc_skin_list) && not([player] call player_pmc_whitelist)) exitWith {
 		player groupchat "You cannot access PMC Shops: The police chief has not added you to the whitelist";
-		call _failed_change;
+		[] call _failed_change;
 	};
 
 	if ((_class in pmc_skin_list) && ([player] call player_pmc_blacklist)) exitWith {
 		player groupchat "You cannot access PMC Shops: The police chief has added you to the blacklist";
-		call _failed_change;
+		[] call _failed_change;
 	};
 	
 	_score = score _oldUnit;
 	_rank = rank _oldUnit;
-	_damage = damage _olUnit;
-	_sarmor = _oldUnit getVariable "stun_armor";
-	_mask = _oldUnit getVariable "gasmask";
+	_sarmor = _oldUnit getVariable ["stun_armor", "none"];
+	_mask = _oldUnit getVariable ["gasmask", false];
 	
 	_oldUnit switchCamera "INTERNAL";
 	
@@ -240,7 +252,7 @@ C_change = {
 	_temp_group = (group server);
 	if (isNull _temp_group) exitWith {
 		player groupChat format["ERROR: Cannot change clothes, temporary group is null"];
-		call _failed_change;
+		[] call _failed_change;
 	};
 
 	private["_group"];
@@ -249,7 +261,7 @@ C_change = {
 	
 	if (isNull _newUnit) exitWith {
 		player groupchat "ERROR: Cannot change clothes, could not create new unit";
-		call _failed_change;
+		[] call _failed_change;
 	};
 	[_oldUnit, _newUnit] call stats_copy_variables;	
 	
@@ -264,11 +276,13 @@ C_change = {
 	addSwitchableUnit _newUnit;
 	selectPlayer _newUnit;
 	_group selectLeader _newUnit;
+	
+	[_oldUnit, _newUnit] call C_transferDamage;
+	
 	[_oldUnit] call C_delete;
 	
 	_newUnit setRank _rank;
 	_newUnit addscore _score;
-	_newUnit setdamage _damage;
 	
 	[_newUnit] call player_reset_gear;
 	[_newUnit] call player_reset_side_inventory;
@@ -290,18 +304,13 @@ C_change = {
 	C_changing = false;
 	
 	role = _newUnit;
-	_newUnit addEventHandler ["fired", {_this execVM "Awesome\EH\EH_fired.sqf"}];
-	_newUnit addEventHandler ["handleDamage", {_this execVM "Awesome\EH\EH_handledamage.sqf"}];
-	_newUnit addEventHandler ["WeaponAssembled", {_this execVM "Awesome\EH\EH_weaponassembled.sqf"}];
-	_newUnit addMPEventHandler ["MPKilled", { _this call player_handle_mpkilled }];
-	_newUnit addMPEventHandler ["MPRespawn", { _this call player_handle_mprespawn }];
 	
 	_newUnit setVariable ["stun_armor", _sarmor, true];
 	_newUnit setVariable ["gasmask", _mask, true];
 	[_newUnit, "isstunned", false] call player_set_bool;
 	
 
-	if (not(_first_time)) then {
+	if (!(_first_time)) then {
 		titleText ["Changing Clothes", "BLACK IN", 1];
 		sleep 0.5;
 	};

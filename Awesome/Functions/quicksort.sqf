@@ -1,11 +1,7 @@
-if (isNil "sort_key") then {
-    sort_key = 0;
-};
-if (isNil "sort_data") then {
-    sort_data = 1;
-};
-
 if (not(isNil "quicksort_functions_defined")) exitWith {};
+
+sort_key = 0;
+sort_data = 1;
 
 qsort_swap = {
 	private["_left", "_right", "_temp", "_array"];

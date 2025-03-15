@@ -615,7 +615,7 @@ class manage_gang_menu {
 	};
 };
 
-class ja_nein {
+class dialog_yes_no {
 	idd = -1;
 	movingEnable = true;
 	controlsBackground[] = {DLG_BACK1, background};
@@ -836,7 +836,7 @@ class steuerdialog {
 		w = 0.20; h = 0.04;
 
 		text = $STRD_description_steuer_submit;
-		action = "[(round(sliderPosition 12)), (round(sliderPosition 32)), (round(sliderPosition 42)), (round(sliderPosition 22)), (round(sliderPosition 52))] call interact_president_change_taxes; closedialog 0;";
+		action = "[(round(sliderPosition 12)), (round(sliderPosition 22)), (round(sliderPosition 32)), (round(sliderPosition 42)), (round(sliderPosition 52))] call interact_president_change_taxes; closedialog 0;";
 	};
 
 	class button_cancel : RscButton {

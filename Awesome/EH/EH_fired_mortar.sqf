@@ -23,8 +23,7 @@ private["_M_effect"];
 M_Round	= "";
 _M_effect = "";
 
-player groupchat "running";
-_h = [] execVM "Awesome\Effects\mortar_effects.sqf";
+[] execVM "Awesome\Effects\mortar_effects.sqf";
 
 if (_unit isKindOf "M252") then {
 	switch _magazine do {
@@ -64,6 +63,9 @@ if (player in (crew _unit)) then {
 	player groupchat format["SHOT TYPE: %1		ELEVATION: %2		AZIMUT: %3", M_Round  , M_Elevation, M_Azimut];
 };
 
+
+_unit setWeaponReloadingTime [_unit,currentWeapon _unit, 10];
+
 ///////////////
 // Round Effects
 ///////////////
@@ -73,6 +75,7 @@ switch _M_effect do {
 		deleteVehicle _projectile;
 	};
 	case "WP": {
+		private["_pos_projectile","_tempo"];
 		_pos_projectile = getPosATL _projectile;
 		_tempo = 0.0075;
 
@@ -86,6 +89,7 @@ switch _M_effect do {
 	case "IL": {	
 		switch M_ill_style do {
 			case "highest": {
+				private["_pro_height"];
 				_pro_height = 0;
 				while { (getPosATL _projectile select 2) >  _pro_height} do {
 					_pro_height = (getPosATL _projectile select 2);

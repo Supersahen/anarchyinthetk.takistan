@@ -2,13 +2,14 @@ SpeedGun_init = {
 	SG_ON = if (isNil "SG_ON") then { true } else {not(SG_ON)};
 	private["_state"];
 	_state = if (SG_ON) then { "ON" } else { "OFF" };
-	server globalChat format["Speed Gun: %1", SG_ON];
+	server globalChat format["Speed Radar: %1", _state];
 };
 
 SpeedGun_loop = {
 	private["_vehicle", "_bool", "_target", "_string", "_speed", "_speedS"];
 
 	if (not(iscop)) exitWith {};
+	SG_ON = false;
 	
 	while {true} do {
 		if (SG_ON && iscop && INV_shortcuts) then {

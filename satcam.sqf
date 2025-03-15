@@ -1,5 +1,3 @@
-liafu = true;
-
 private["_position"];
 
 _position = _this select 0;
@@ -42,6 +40,7 @@ sliderSetSpeed [10, 100, 250];
 sliderSetRange [11, 0, 200];
 sliderSetSpeed [11, 0.05, 20];
 
+private["_slider1","_slider2"];
 _slider1 = 0;
 _slider2 = 0;
 

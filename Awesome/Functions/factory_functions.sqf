@@ -5,7 +5,6 @@ if (not(isNil "factory_functions_defined")) exitWith {};
 
 factory_globals = {
 	private["_weaponfactory"];
-
 	_weaponfactory=
 	[
 		"GPS",
@@ -82,6 +81,8 @@ factory_globals = {
 		"AK_47_S",
 		"Sa58P_EP1",
 		"Sa58V_EP1",
+		"Sa58V_CCO_EP1",
+		"Sa58V_RCO_EP1",
 		"Rnd_762x39_AK47",
 		"Rnd_762x39_SA58",
 		"LeeEnfield",
@@ -142,11 +143,11 @@ factory_globals = {
 		"HandGrenade_East",
 		"PipeBomb",
 		"selbstmordbombe"
-		//"fernzuenderbombe",
-		//"zeitzuenderbombe",
-		//"aktivierungsbombe",
-		//"geschwindigkeitsbombe",
-		//"fernzuender"
+//		"fernzuenderbombe",
+//		"zeitzuenderbombe",
+//		"aktivierungsbombe",
+//		"geschwindigkeitsbombe",
+//		"fernzuender"
 	];
 
 	private["_terrorfactory"];
@@ -165,6 +166,7 @@ factory_globals = {
 	_vehiclefactory=
 	[
 		"Tractor",
+		"tractorOld",
 		"TowingTractor",
 		"ATV_CZ_EP1",
 		"MMT_Civ",
@@ -223,7 +225,7 @@ factory_globals = {
 		"MV22",
 		"BAF_Merlin_HC3_D",
 		"Mi17_Civilian",
-		"C130J_US_EP1",
+		"C130J",
 		"An2_1_TK_CIV_EP1",
 		"An2_2_TK_CIV_EP1",
 		"L39"
@@ -241,7 +243,6 @@ factory_globals = {
 		"nitro",
 		"lockpick",
 		"medikit",
-		"lighter",
 		"defuser",
 		"fernzuender",
 		"vclammo",
@@ -289,42 +290,10 @@ factory_globals = {
 		"An2_TK_EP1"
 	];
 
-	private["_alcoholfactory"];
-	_alcoholfactory = 
-	[
-		"beer",
-		"beer2",
-		"vodka",
-		"smirnoff",
-		"wiskey",
-		"wine",
-		"wine2"
-	];
-
-	private["_ringfactory"];
-	_ringfactory = 
-	[
-		"Diamondring",
-		"EDiamondring",
-		"Platinumring",
-		"EPlatinumring"
-	];
-
+	private["_furnace"];
 	_furnace = ["steel"];
-
-	["vehiclequeue", []] call stats_init_variable;
-	["aircraftqueue", []] call stats_init_variable;
-	["tvehiclequeue", []] call stats_init_variable;
-	["weaponqueue", []] call stats_init_variable;
-	["itemqueue", []] call stats_init_variable;
-	["avehiclequeue", []] call stats_init_variable;
-	["tavehiclequeue", []] call stats_init_variable;
-	["alcoholfactoryqueue", []] call stats_init_variable;
-	["terrorfactoryitemsqueue", []] call stats_init_variable;
-	["diamondqueue", []] call stats_init_variable;
-	["furnacequeue", []] call stats_init_variable;
-
-
+	
+	factory_selected = -1;
 	factory_object = 0;
 	factory_id = 1;
 	factory_name = 2;
@@ -341,11 +310,7 @@ factory_globals = {
 		[ Aircraftfactory, "factory2", "Aircraft Factory", dummyobj, airfacspawn, _aircraft_factory, 8000000, "AircraftFactory1", "aircraftqueue"],
 		[ ItemFabrik_1, "factory3", "General Factory", igunbox,dummyobj, _itemfactory, 650000, "Fabrikablage3", "itemqueue"],
 		[ weaponfactory, "factory4", "Weapon Factory", wfgunbox,dummyobj, _weaponfactory, 10000000, "Fabrikablage4", "weaponqueue"],
-		//[terrorshop2,"factory5","Terror Factory",dummyobj,tfacspawn,_terrorfactory,300000,"Fabrikablage5", "tvehiclequeue"],
 		[ tairshop, "factory6", "Terrorist Vehicle Factory", dummyobj,tairspawn, _tairfactory, 20000000, "Fabrikablage6", "tavehiclequeue"],
-		[ alcoholfactory, "factory7", "Alcohol Factory", dummyobj, dummyobj, _alcoholfactory, 1000000, "Fabrikablage7", "alcoholfactoryqueue"] ,
-		//[terrorfactoryitems, "factory8", "Terror item factory", tgunbox,dummyobj, _terrorfactoryitems, 600000, "Fabrikablage8", "terrorfactoryitemsqueue"]
-		[ ringfactory, "factory9", "Ring Factory", dummyobj, dummyobj, _ringfactory, 2500000, "Fabrikablage9", "diamondqueue"],
 		[ Furnace, "factory10","Furnace", dummyobj, dummyobj, _furnace, 1500000, "Fabrikablage10","furnacequeue"]
 	];
 };
@@ -360,11 +325,19 @@ factory_init = {
 	if (isNil "_factory_id") exitWith {};
 	if (typeName _factory_id != "STRING") exitWith {};
 	
-	private["_factory", "_queue_name", "_items"];
+	private["_factory"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory") exitWith {};
-	
+//	if (isNil "_factory") exitWith {};
+	if ((typeName _factory) != "ARRAY") exitwith {};
+		
+	//initialize the factory queue
+	private["_queue_name"];
 	_queue_name = _factory select factory_queue;
+	[_queue_name, []] call stats_init_variable;
+	
+	
+	//initialize the factory items
+	private["_items"];
 	_items = _factory select factory_items;
 	
 	private["_workers_name", "_workers"];
@@ -385,17 +358,30 @@ factory_init = {
 		missionNamespace setVariable [_prod_name, 0];
 	} forEach _items;
 	
-	
 	private["_queue"];
 	_queue = missionNamespace getVariable _queue_name;
 	{
-		private["_item", "_pend_name"];
+		private["_item", "_pend_name", "_pend"];
 		_item = _x;
 		_pend_name = format["%1pend", _item];
 		_pend = missionNamespace getVariable _pend_name;
 		_pend = _pend + 1;
 		missionNamespace setVariable [_pend_name, _pend]; 
 	} forEach _queue;
+};
+
+factory_save_storage = {
+	private["_player"];
+	_player = _this select 0;
+	if (not([_player] call player_exists)) exitWith {};
+	
+	{
+		private["_factory", "_storage_name", "_storage"];
+		_factory = _x;
+		_storage_name = _factory select factory_storage;
+		_storage = [_player, _storage_name] call player_get_array;
+		[_player, _storage_name, _storage, false] call player_set_array_checked;
+	} forEach all_factories;
 };
 
 factory_calculate_production_cost = {
@@ -406,7 +392,7 @@ factory_calculate_production_cost = {
 	if (isNil "_item") exitWith {0};
 	if (typeName _item != "STRING") exitWith {0};
 	
-	private["_buy_price"];
+	private["_buy_price", "_sell_price"];
 	_buy_price = (_item call INV_GetItemBuyCost);
 	_sell_price = (_item call INV_GetItemSellCost);
 	
@@ -461,7 +447,7 @@ factory_lookup_id = {
 	if (typeName _id != "STRING") exitWith {nil};
 	
 	private["_factory"];
-	_factory = nil;
+	_factory = "";
 	{
 		private["_cfactory", "_cid"];
 		_cfactory = _x;
@@ -485,7 +471,7 @@ factory_player_near = {
 	
 	private["_min_distance", "_min_factory"];
 	_min_distance = _distance;
-	_min_factory = nil;
+	_min_factory = "";
 	
 	{
 		private["_cfactory", "_cdistance", "_cobject"];
@@ -523,16 +509,17 @@ factory_loop = {
 	
 	private["_factory", "_queue_name"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory") exitWith {
+//	if (isNil "_factory") exitWith {
+	if ((typeName _factory) != "ARRAY") exitwith {
 		player groupChat "Error (factory_loop): Invalid factory";
 		_this spawn factory_loop;
 	};
 	
 	_queue_name = _factory select factory_queue;
 	
-	call factory_update_queue_list;
-	call factory_update_dequeue_item;
-	call factory_update_enqueue_item;
+	[] call factory_update_queue_list;
+	[] call factory_update_dequeue_item;
+	[] call factory_update_enqueue_item;
 	
 	//wait for an item to be put on queue
 	//player groupChat format["Waiting for queue item at %1", _factory_id];
@@ -669,7 +656,8 @@ factory_item_dequeue = {
 	
 	private["_factory"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName _factory) != "ARRAY") exitwith {};
 	
 	private["_factory_name", "_queue_name", "_factory_storage"];
 	_factory_name = _factory select factory_name;
@@ -781,12 +769,14 @@ factory_item_enqueue = {
 	if (typeName _amount != "SCAlAR") exitWith {};
 	
 	if (_amount == 0) exitWith {};
+	_amount = round(_amount);
 	factory_enqueue_active = true;
 	
 	
 	private["_factory", "_factory_storage", "_factory_queue", "_factory_name", "_factory_money", "_starttime"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory") exitWith {factory_enqueue_active = false;};
+//	if (isNil "_factory") exitWith {factory_enqueue_active = false;};
+	if ((typeName _factory) != "ARRAY") exitwith {factory_enqueue_active = false;};
 	
 	_factory_storage = _factory select factory_storage;
 	_factory_queue = _factory select factory_queue;
@@ -864,11 +854,13 @@ factory_item_create = {
 	if (isNil "_amount") exitWith {};
 	if (typeName _amount != "SCAlAR") exitWith {};
 	
+	_amount = round(_amount);
 	if (_amount <= 0) exitWith {};
 
 	private["_factory", "_factory_storage", "_factory_spawn", "_factory_crate"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName _factory) != "ARRAY") exitwith {};
 	
 	_factory_storage = _factory select factory_storage;
 	_factory_spawn = _factory select factory_spawn;
@@ -912,7 +904,7 @@ factory_item_create = {
 				[(_info call INV_GetItemClassName), 1, _factory_crate] spawn INV_CreateMag;
 			};
 			case "Vehicle": {
-				private["_vehicle_class"];
+				private["_vehicle_class", "_vehicle_script_name"];
 				_vehicle_class = (_info call INV_GetItemClassName);
 				_vehicle_script_name = (_info call INV_GetItemScriptName);
 				[_factory_spawn, _vehicle_class, _vehicle_script_name, false] spawn vehicle_create_shop_extended;
@@ -923,7 +915,7 @@ factory_item_create = {
 		_amount = _amount - 1;
 	};
 	
-	call factory_update_enqueue_item;
+	[] call factory_update_enqueue_item;
 };
 
 
@@ -945,7 +937,8 @@ factory_remove_actions = {
 factory_update_enqueue_list = { 
 	private["_factory"];
 	_factory = factory_selected;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName factory_selected) != "ARRAY") exitwith {};
 	
 	private["_queue_name", "_queue", "_items", "_workers_name", "_workers"];
 	_queue_name = _factory select factory_queue;
@@ -969,16 +962,14 @@ factory_update_enqueue_list = {
 		lbSetData [factory_enqueue_list_id, _index, _x];
 	} forEach _items;
 		
-	call factory_update_enqueue_item;
+	[] call factory_update_enqueue_item;
 };
-
-
-
 
 factory_update_queue_list = { 
 	private["_factory"];
 	_factory = factory_selected;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName factory_selected) != "ARRAY") exitwith {};
 	
 	private["_queue_name", "_queue"];
 	_queue_name = _factory select factory_queue;
@@ -1052,10 +1043,9 @@ factory_update_status_fields = {
 };
 
 factory_update_enqueue_item = {
-	private["_index", "_item"];
+	private["_index", "_item", "_production_cost", "_avail"];
 	_index = (lbCurSel factory_enqueue_list_id);
 	
-	private["_production_cost", "_avail"];
 	_production_cost = 0;
 	_avail = 0;
 	
@@ -1082,9 +1072,9 @@ factory_update_enqueue_item = {
 	ctrlSetText [factory_item_cost_field_id, format["$%1", strM(_production_cost)]];
 	ctrlSetText [factory_item_produced_field_id, str(_avail)];
 	
-	private["_messages"];
-	_messages = call factory_validate_enqueue_item;
-	[_messages] call factory_update_status_fields;
+//	_messages = [] call factory_validate_enqueue_item;
+//	[_messages] call factory_update_status_fields;
+	[([] call factory_validate_enqueue_item)] call factory_update_status_fields;
 };
 
 factory_validate_enqueue_item = {
@@ -1095,7 +1085,8 @@ factory_validate_enqueue_item = {
 	
 	private["_factory"];
 	_factory = factory_selected;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName factory_selected) != "ARRAY") exitwith {};
 		
 	private["_player", "_item", "_index"];	
 	_player = player;
@@ -1117,7 +1108,7 @@ factory_validate_enqueue_item = {
 	_amount = if (_amount_str == "") then { 0 } else {[_amount_str] call parse_number };
 	_amount = if (_amount < 0 ) then { ctrlSetText [factory_amount_field_id, "1"]; 1 } else {_amount};
 	_amount = if (_amount > 100) then { ctrlSetText [factory_amount_field_id, "100"]; 100 } else { _amount };
-	
+	_amount = round(_amount);
 	
 	
 	if (_amount == 0) exitWith {
@@ -1139,7 +1130,7 @@ factory_validate_enqueue_item = {
 	_factory_money = [_player, "money", _factory_storage] call INV_GetStorageAmount;
 	_production_cost = ([_item] call factory_calculate_production_cost) * _amount;
 	
-	private["_created_allowed", "_enqueue_allowed"];
+	private["_create_allowed", "_enqueue_allowed"];
 	_create_allowed = true;
 	_enqueue_allowed = true;
 	
@@ -1168,10 +1159,8 @@ factory_validate_enqueue_item = {
 };
 
 factory_update_dequeue_item = {
-	call factory_update_production_stats;
-	private["_messages"];
-	_messages = call factory_validate_dequeue_item;
-	[_messages] call factory_update_status_fields;
+	[] call factory_update_production_stats;
+	[([] call factory_validate_dequeue_item)] call factory_update_status_fields;
 };
 
 factory_validate_dequeue_item = {
@@ -1179,7 +1168,8 @@ factory_validate_dequeue_item = {
 	
 	private["_factory"];
 	_factory = factory_selected;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName factory_selected) != "ARRAY") exitwith {};
 		
 	private["_player", "_item", "_index"];	
 	_player = player;
@@ -1217,8 +1207,10 @@ factory_validate_dequeue_item = {
 
 factory_update_production_stats = {
 	private["_factory"];
+	
 	_factory = factory_selected;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName factory_selected) != "ARRAY") exitwith {};
 	
 	private["_item", "_index"];	
 	_index = (lbCurSel factory_dequeue_list_id);
@@ -1276,7 +1268,7 @@ factory_production_menu = { _this spawn {
 	factory_selected = _factory;
 	[] spawn {
 		waitUntil { not(ctrlVisible factory_enqueue_list_id) };
-		factory_selected = nil;
+		factory_selected = "";
 	};
 	
 	private["_factory_name"];
@@ -1313,7 +1305,8 @@ factory_hire_workers = {
 	
 	private["_factory", "_queue_name", "_factory_name"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if ((typeName _factory) != "ARRAY") exitwith {};
 	
 	_queue_name = _factory select factory_queue;
 	_factory_name = _factory select factory_name;
@@ -1326,6 +1319,10 @@ factory_hire_workers = {
 	_max = maxfacworkers;
 	if (_workers >= _max) exitWith {
 		player groupChat format["%1-%2, your %3 has already reached maximum of %4 workers", _player, (name _player), _factory_name, _max];
+	};
+	
+	if ((_workers + _workers_count) > maxfacworkers) exitwith {
+		player groupChat format['%1-%2, You cannot buy this many workers', _player, (name _player)];
 	};
 	
 	private["_money", "_total_cost"];
@@ -1369,7 +1366,8 @@ factory_add_actions = {
 	
 	private["_factory"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory_id") exitWith {};
+//	if (isNil "_factory_id") exitWith {};
+	if ((typeName _factory) != "ARRAY") exitwith {};
 	
 	private["_factory_id", "_factory_cost", "_factory_storage", "_factory_name"];
 	_factory_name = _factory select factory_name;
@@ -1408,7 +1406,9 @@ factory_buy = {
 	
 	private["_factory", "_factory_cost"];
 	_factory = [_factory_id] call factory_lookup_id;
-	if (isNil "_factory") exitWith {};
+//	if (isNil "_factory") exitWith {};
+	if((typeName _factory) != "ARRAY")exitwith{};
+	
 	_factory_cost = _factory select factory_cost;
 	
 	if (_factory_id in INV_Fabrikowner) exitWith {
@@ -1431,8 +1431,6 @@ factory_buy = {
 };
 
 factory_setup = {
-	call factory_globals;
-	
 	{
 		private["_factory", "_factory_id"];
 		_factory = _x;
@@ -1443,6 +1441,9 @@ factory_setup = {
 	} forEach all_factories;
 };
 
-call factory_setup;
+[] call factory_globals;
+if (isClient) then {
+	call factory_setup;
+};
 
 factory_functions_defined = true;

@@ -1,4 +1,5 @@
-//=================================================================================
+//============================================================================================================================================
+seizemoneyreturn		 = 0.25; 							//Amount of money the cop gets by seizing illegal items (in percent of sell price)
 INV_smscost              = 25;
 add_civmoney             = 1250;
 add_copmoney             = 2500;
@@ -41,7 +42,6 @@ fvspam                   = false;
 maxfacworkers            = 50;
 maxfacworkers2           = 41;
 firingcaptive            = false;
-pickingup                = false;
 lockpickchance           = 30;
 planting                 = false;
 drugstockinc             = 900;
@@ -129,16 +129,11 @@ backup_cop_weapons      =
     "ItemRadio",
     "ItemCompass",
     "ItemWatch",
-    "M9",
     "m16a4"
 ];
 
 backup_cop_magazines    =
 [
-    "15Rnd_9x19_M9",
-    "15Rnd_9x19_M9",
-    "15Rnd_9x19_M9SD",
-    "15Rnd_9x19_M9SD",
     "30Rnd_556x45_Stanag",
     "30Rnd_556x45_Stanag",
     "30Rnd_556x45_Stanag",
@@ -157,13 +152,10 @@ backup_opf_weapons      =
     "ItemRadio",
     "ItemCompass",
     "ItemWatch",
-    "Makarov",
     "AK_74_GL_kobra"
 ];
 backup_opf_magazines    =
 [
-    "8Rnd_9x18_Makarov",
-    "8Rnd_9x18_Makarov",
     "30Rnd_545x39_AK",
     "30Rnd_545x39_AK",
     "30Rnd_545x39_AK",
@@ -182,14 +174,15 @@ backup_ins_weapons      =
     "ItemWatch",
     "AK_47_S"
 ];
+
 backup_ins_magazines    =
 [
-    "30Rnd_545x39_AK",
-    "30Rnd_545x39_AK",
-    "30Rnd_545x39_AK",
-    "30Rnd_545x39_AK",
-    "30Rnd_545x39_AK",
-    "30Rnd_545x39_AK",
+    "30Rnd_762x39_AK47",
+    "30Rnd_762x39_AK47",
+    "30Rnd_762x39_AK47",
+    "30Rnd_762x39_AK47",
+    "30Rnd_762x39_AK47",
+    "30Rnd_762x39_AK47",
     "HandGrenade_East",
     "HandGrenade_East"
 ];
@@ -210,7 +203,6 @@ patrolmoneyperkm        = 5.0;  // 1 would be equal to $7,000 for 1KM
 //=========government convoy=============
 govconvoybonus          = 20000;
 convoyrespawntime       = 30;  //reset to 30 after testing
-moneyintruck            = true; //dont change
 
 //===== Gas station robbing
 maxstationmoney         = 35000;
@@ -226,12 +218,12 @@ if (isServer) then { [0] call shop_set_fuel_consumed; };
 
 
 //==============================MINING=============================================
-shoveldur=20;
-shovelmax=2;
-pickaxedur=50;
-pickaxemax=3;
-hammerdur=100;
-hammermax=4;
+m_shovel_max = 0.25;
+m_shovel_loop = 2;
+m_pick_max = 0.5;
+m_pick_loop = 5;
+m_drill_max = 1;
+m_drill_loop = 5;
 working=false;
 
 //===============================GANGS=============================================
@@ -239,16 +231,6 @@ gangincome          = 15000;
 gangcreatecost      = 75000;
 gangdeltime         = 300;
 gangareas           = [gangarea1,gangarea2,gangarea3];
-
-//=================================================================================
-CityLocationArray = [
-    [CityLogic1, 500],
-    [CityLogic2, 400],
-    [CityLogic3, 300],
-    [CityLogic4, 200],
-    [CityLogic5, 100]
-];
-respawnarray        = [respawn1,respawn2,respawn3,respawn4,respawn5,respawn6,respawn7,respawn8,respawn9,respawn10,respawn11,respawn12];
 
 //=========== cop patrol array ==========
 coppatrolarray  =
@@ -268,12 +250,7 @@ coppatrolarray  =
     getmarkerpos "patrolpoint13"
 ];
 
-
-
-
-
 if (iscop) then {
-    [player, 'handy', 1] call INV_SetItemAmount;
     RadioTextMsg_1 = "Put your fucking hands up!";
     RadioTextMsg_2 = "Pull over and stay in your vehicle!";
     RadioTextMsg_3 = "Drop your weapon and put your hands on your head!";
@@ -294,20 +271,15 @@ publicarbeiterarctionarray = [];
 
 private["_i"];
 
-
 robpoolsafe1           = 0; 
 robpoolsafe2           = 0;
 robpoolsafe3           = 0;
 deadtimebonus          = 0.001;
 
-
-["arrested", false] call stats_init_variable;
 ["deadtimes", 0] call stats_init_variable;
 ["copskilled", 0] call stats_init_variable;
 ["civskilled", 0] call stats_init_variable;
 ["arrestsmade", 0] call stats_init_variable;
-
-
 
 selfkilled               = 0;
 killstrafe               = 20000;
@@ -326,7 +298,6 @@ LawsArray              = [
 	"_______________(empty)__________________"
 ];
 
-
 isMayor                  = false;
 WahlArray                = [];
 MayorNumber              = -1;
@@ -335,7 +306,7 @@ MayorExtraPay            = 5000;
 private["_i"];
 _i = 0;
 while { _i < (count playerstringarray) } do {
-	WahlArray = WahlArray + [ [] ];
+	WahlArray set[(count WahlArray), []];
 	_i = _i + 1;
 };
 
@@ -347,11 +318,11 @@ chiefExtraPay            = 10000;
 private["_i"];
 _i = 0;
 while { _i < (count playerstringarray) } do {
-	WahlArrayc = WahlArrayc + [ [] ];
+	WahlArrayc set[(count WahlArrayc), []];
 	_i = _i + 1;
 };
 
-
+INV_InventarPistol = "";
 atmscriptrunning = 0;
 shopactivescript = 0;
 deadcam_wechsel_dauer    = 5;
@@ -374,14 +345,13 @@ speedbomb_mindur         = 10;
 speedbomb_maxdur         = 300;
 zeitbombe_mintime        = 1;
 zeitbombe_maxtime        = 10;
-HideoutLocationArray     = CityLocationArray;
 publichideoutarray       = [];
 hideoutcost              = 20000;
 marker_ausserhalb        = param1;
 marker_innerhalb         = 5;
 marker_CopDistance       = 50; //controls distance cops need to be to make civ dots appear outside of towns.
 CivMarkerUngenau         = 20;
-
+lastShot 				= 0;
 classmap = 
 [
 	["money", "EvMoney"],
@@ -450,17 +420,14 @@ timeinworkplace          = 0;
 wpcapacity               = 10;
 INV_hasitemshop          = 0;
 INV_haswepshop           = 0;
-gunlicensetargets        = [];
 ["BuildingsOwnerArray", []] call stats_init_variable;
 
-if(isciv) then {
 BuyAbleBuildingsArray    =
     [
         ["wp1", "Workplace 1", workplace_getjobflag_1, 100000, 500, "wp", "WpAblage_1"],
         ["wp2", "Workplace 2", workplace_getjobflag_2, 200000, 1000, "wp", "WpAblage_2"],
         ["wp3", "Workplace 3", workplace_getjobflag_3, 350000, 1500, "wp", "WpAblage_3"]
     ];
-};
 
 // array used in taxi missions
 civclassarray         =
@@ -489,7 +456,6 @@ civclassarray         =
 
 civslavearray          = ["Hooker1","Hooker2","Hooker3","Hooker4","RU_Hooker1","RU_Hooker2","RU_Hooker3","RU_Hooker4"];
 civworkerarray         = ["Worker1","Worker2","Worker3","Worker4"];
-terroristarray         = ["TK_GUE_Soldier_3_EP1","TK_GUE_Soldier_AAT_EP1","TK_GUE_Soldier_AT_EP1","TK_GUE_Soldier_EP1","TK_GUE_Soldier_HAT_EP1","TK_INS_Soldier_AAT_EP1","TK_INS_Soldier_EP1"];
 
 player_connected_handler = {
 	private["_id", "_name", "_uid"];
@@ -501,133 +467,10 @@ player_connected_handler = {
 	publicVariable "INV_ItemTypenArray";
 	publicVariable "INV_ItemStocks";
 	publicVariable "INV_ItemMaxStocks";
+	
+	[_uid] call ftf_connected;
 };
 
 if(isServer)then {
 	onPlayerConnected { [_id, _name, _uid] call player_connected_handler };
 };
-
-// Role Arrays
-civ_array = [
-	"civ1","civ2","civ3","civ4","civ5","civ6","civ7","civ8","civ9","civ10",
-	"civ11","civ12","civ13","civ14","civ15","civ16","civ17","civ18","civ19","civ20",
-	"civ21","civ22","civ23","civ24","civ25","civ26","civ27","civ28","civ29","civ30",
-	"civ31","civ32","civ33","civ34","civ35","civ36","civ37","civ38","civ39","civ40",
-	"civ41","civ42","civ43","civ44","civ45","civ46","civ47","civ48","civ49","civ50",
-	"civ51","civ52","civ53","civ54","civ55","civ56","civ57","civ58","civ59","civ60",
-	"civ61","civ62","civ63","civ64"
-];
-
-esu_array = [
-	"esu1","esu2","esu3","esu4","esu5"
-];
-
-cop_array = [
-	"cop1","cop2","cop3","cop4","cop5",
-	"cop6","cop7","cop8","cop9","cop10",
-	"cop11","cop12","cop13","cop14","cop15",
-	"cop16","cop17","cop18","cop19","cop20",
-	"cop21","cop22"
-];	
-
-ins_array = [
-	"ins1","ins2","ins3","ins4","ins5",
-	"ins6","ins7","ins8","ins9","ins10",
-	"ins11"
-];
-
-opfor_array = [
-	"opf1","opf2","opf3","opf4","opf5",
-	"opf6","opf7","opf8","opf9","opf10",
-	"opf11","opf12","opf13","opf14","opf15",
-	"opf16","opf17","opf18","opf19","opf20",
-	"opf21","opf22"
-];
-
-// Weapons and Ammunition
-smg_array = ["MP5A5","MP5SD","AKS_74_U","bizon","bizon_silenced","bizon_silenced","VSS_vintorez","m8_compact_pmc","Sa58V_CCO_EP1","M8_compact","G36C"];
-vip_weapons_array = ["BAF_AS50_scoped","M107","BAF_L85A2_RIS_CWS","ksvk","m107","AKS_74_GOSHAWK"];
-beanbag_rounds = ["B_12Gauge_74Slug"];
-beanbag_guns = ["M1014","AA12_PMC","Saiga12K"];
-rubber_rounds = ["B_9x19_SD"];
-rubber_round_guns = ["MP5A5","MP5SD"];
-
-// Phone Apps
-appstore = [
-	["Banking App","banking_app",100000],
-	["Mobile Market","market_app",100000],
-	["-Suggestions Welcomed-","banking_app",100000]
-];
-
-// Flags and States
-pmc = false;
-srt = false;
-osf = false;
-vice = false;
-ziptied = false;
-testing = false;
-testing_stuns = false;
-phonetesting = true;
-
-// Constants
-startmoneh = 500000;
-dog_cost = 100000;
-slave_cost = 50000;
-huren_cost = 50000;
-maxslave = 6;
-maxhuren = 5;
-maxfacworkers = 50;
-maxfacworkers2 = 41;
-
-// Initialize city logic variables
-if (isNil "CityLogic1") then {CityLogic1 = objNull};
-if (isNil "CityLogic2") then {CityLogic2 = objNull};
-if (isNil "CityLogic4") then {CityLogic4 = objNull};
-if (isNil "CityLogic5") then {CityLogic5 = objNull};
-if (isNil "Militarybase") then {Militarybase = objNull};
-
-// Initialize target variables
-if (isNil "t11") then {t11 = objNull};
-if (isNil "t12") then {t12 = objNull};
-if (isNil "t21") then {t21 = objNull};
-if (isNil "t22") then {t22 = objNull};
-if (isNil "t31") then {t31 = objNull};
-if (isNil "t32") then {t32 = objNull};
-if (isNil "t41") then {t41 = objNull};
-if (isNil "t42") then {t42 = objNull};
-if (isNil "t51") then {t51 = objNull};
-if (isNil "t52") then {t52 = objNull};
-if (isNil "t61") then {t61 = objNull};
-if (isNil "t62") then {t62 = objNull};
-if (isNil "t71") then {t71 = objNull};
-if (isNil "t72") then {t72 = objNull};
-if (isNil "t81") then {t81 = objNull};
-if (isNil "t82") then {t82 = objNull};
-if (isNil "t91") then {t91 = objNull};
-if (isNil "t92") then {t92 = objNull};
-if (isNil "t101") then {t101 = objNull};
-if (isNil "t111") then {t111 = objNull};
-if (isNil "t112") then {t112 = objNull};
-if (isNil "t121") then {t121 = objNull};
-if (isNil "t131") then {t131 = objNull};
-if (isNil "t132") then {t132 = objNull};
-if (isNil "t133") then {t133 = objNull};
-if (isNil "t134") then {t134 = objNull};
-if (isNil "t135") then {t135 = objNull};
-
-// Initialize tank variables
-if (isNil "t72") then {t72 = objNull};
-if (isNil "t80") then {t80 = objNull};
-if (isNil "t90") then {t90 = objNull};
-if (isNil "tank1") then {tank1 = objNull};
-if (isNil "tank2") then {tank2 = objNull};
-if (isNil "tank3") then {tank3 = objNull};
-if (isNil "tank4") then {tank4 = objNull};
-if (isNil "tank5") then {tank5 = objNull};
-if (isNil "tank6") then {tank6 = objNull};
-if (isNil "tank7") then {tank7 = objNull};
-if (isNil "tank8") then {tank8 = objNull};
-if (isNil "tank9") then {tank9 = objNull};
-if (isNil "tank10") then {tank10 = objNull};
-if (isNil "tank11") then {tank11 = objNull};
-if (isNil "tank12") then {tank12 = objNull};

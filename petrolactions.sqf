@@ -1,6 +1,5 @@
-
 petrol_refuel_tank = {
-	private ["_fuel", "_fuelstartposition", "_liter_price"];
+	private ["_fuel", "_fuelstartposition", "_liter_price", "_percent_refueled"];
 	
 	_liter_price = _this select 0;
 	if (isNil "_liter_price") exitWith {};
@@ -87,10 +86,10 @@ petrol_get_refueling = {
 };
 
 petrol_get_nearest_station = {
-	private["_distance", "_station"];
+	private["_distance", "_station", "_max_distance"];
 	
 	_max_distance = _this select 0;
-	_station = nil;
+	_station = objNull;
 	_distance = -1;
 	
 	{
@@ -105,29 +104,25 @@ petrol_get_nearest_station = {
 	} foreach GasStationArray;
 	
 	
-	if (_distance > _max_distance) exitWith { nil };
+	if (_distance > _max_distance) exitWith { objNull };
 	_station
 };
 
 
 petrol_get_refuel_vehicle = {
-	private["_vehicle"];
-	_vehicle = player getVariable "refuel_vehicle";
-	_vehicle
+	(player getVariable ["refuel_vehicle", objNull])
 };
 
 
 petrol_get_refuel_action = {
-	private["_vehicle"];
+	private["_vehicle", "_refuel_action"];
 	_vehicle = call petrol_get_refuel_vehicle;
-	if (isNil "_vehicle") exitWith {-1};
-	_refuel_action = _vehicle getVariable "refuel_action";
-	_refuel_action = if (isNil "_refuel_action") then { -1 } else { _refuel_action };
-	_refuel_action
+	if (isNull _vehicle) exitWith {-1};
+	(_vehicle getVariable ["refuel_action", -1])
 };
 
 petrol_set_refuel_action = {
-	private["_action"];
+	private["_action", "_vehicle"];
 	_vehicle = _this select 0;
 	_action = _this select 1;
 	
@@ -150,7 +145,7 @@ petrol_add_refuel_action = {
 	if (_refuel_cost <= 0) exitWith {};
 	if (([_vehicle] call petrol_get_refueling)) exitWith {};
 	
-	
+	private["_refuel_action"];
 	_refuel_action = _vehicle addAction [format["Fill gas tank for $%1", _refuel_cost], "noscript.sqf", format["[%1] call petrol_refuel_tank", _liter_price], 1];
 	
 	[_vehicle, _refuel_action] call petrol_set_refuel_action;
@@ -158,11 +153,10 @@ petrol_add_refuel_action = {
 };
 
 petrol_remove_refuel_action = {
-		private["_vehicle"];
+		private["_vehicle","_refuel_action"];
 		
-
 		_vehicle = call petrol_get_refuel_vehicle;
-		if (isNil "_vehicle") exitWith {};
+		if (isNull _vehicle) exitWith {};
 		_refuel_action = call petrol_get_refuel_action;
 		if (_refuel_action < 0) exitWith {};
 		
@@ -172,12 +166,14 @@ petrol_remove_refuel_action = {
 
 
 petrol_check_actions = {
-	private["_vehicle", "_station", "_refuel_action"];
+	private["_vehicle", "_station", "_refuel_action", "_isDriver", "_isNearStation"];
 	
 	_vehicle  = vehicle player;
+	_station = objNull;
 	_station = [16] call petrol_get_nearest_station;
 	_isDriver = (_vehicle != player) && ((driver _vehicle) == player);
-	_isNearStation = (_isDriver && not(isNil "_station"));
+//	_isNearStation = (_isDriver && not(isNil "_station"));
+	_isNearStation = (_isDriver && not(isNull _station));
 	
 	_refuel_action = call petrol_get_refuel_action;
 	
@@ -190,7 +186,8 @@ petrol_check_actions = {
 };
 
 petrol_actions_loop = {
-	{_x setFuelCargo 0} foreach (nearestobjects [getpos copbase1, ["Land_Ind_FuelStation_Feed_Ep1"], 6000]);
+	private["_count"];
+	{_x setFuelCargo 0} foreach (nearestobjects [getPosATL copbase1, ["Land_Ind_FuelStation_Feed_Ep1"], 6000]);
 	_count = count GasStationArray;
 	while {true} do {
 		call petrol_check_actions;

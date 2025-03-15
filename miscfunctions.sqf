@@ -1,35 +1,9 @@
-liafu = true;
-
-reveal = {
-	private["_objs"];
-	_objs = nearestobjects[getpos player, ["man", "allvehicles"], 300];
-	{_x reveal _this;_x dotarget _this;} foreach _objs;
-};
-
-bash = {
-	private["_damage"];
-	_damage = damage player;
-	[player, 10, 0] call setPitchBank;
-	sleep 0.01;
-	[player, -5, 0] call setPitchBank;
-
-	"dynamicBlur" ppEffectEnable true;
-	"dynamicBlur" ppEffectAdjust [10];
-	"dynamicBlur" ppEffectCommit 0;
-	waitUntil {ppEffectCommitted "dynamicBlur"};
-	"dynamicBlur" ppEffectEnable true;
-	"dynamicBlur" ppEffectAdjust [0];
-	"dynamicBlur" ppEffectCommit (0.4 + _damage);
-	waitUntil {ppEffectCommitted "dynamicBlur"};
-};
-
 parse_number = {
 	private ["_number"];
 	_number = _this select 0;
 	if (isNil "_number") exitWith {0};
 	if (typeName _number == "SCALAR") exitWith {_number};
 	if (typeName _number != "STRING") exitWith {0};
-	if (_number == "") exitWith {0};
 	_number = parseNumber(_number);
 	if (isNil "_number") exitWith {0};
 	if (typeName _number != "SCALAR") exitWith {0};
@@ -76,9 +50,9 @@ DialogPlayerList = {
 		private["_player_variable_name", "_player_variable"];
 		
 		_player_variable_name = playerstringarray select _c;
-		_player_variable = missionNamespace getVariable _player_variable_name;
+		_player_variable = missionNamespace getVariable [_player_variable_name, objNull];
 		
-		if (true) then {
+		if (!isNull _player_variable) then {
 			if (not([_player_variable] call player_exists)) exitWith {};
 			private["_is_civ", "_is_cop", "_is_ins", "_is_opf"];
 			_is_civ = [_player_variable] call player_civilian;
@@ -174,15 +148,16 @@ Isse_AddCrimeLogEntry = {
 			_logtext = format["Illegal PMC"];
 		};
 	};
-	CopLog = CopLog + [ [_logplayer, _logtext, _logdate, _logtime] ];
+//	CopLog = CopLog + [ [_logplayer, _logtext, _logdate, _logtime] ];
+	CopLog set[count CopLog, [_logplayer, _logtext, _logdate, _logtime]];
 };
 
 Bomb_Vehicle = {
+	private["_obj"];
 	if (count _this > 1) then {
 		if (not(isNull (_this select 1))) then {
 			_obj = _this select 1;
 			if (((getPosATL _obj) select 2) > 5) then {
-				liafu = true;
 				_obj setDamage 1;
 			} 
 			else {
@@ -208,7 +183,7 @@ Bomb_Vehicle = {
 
 
 SayDirectSpeach = {
-	private ["_text", "_dis"];
+	private ["_art", "_text", "_dis"];
 	_text = _this select 0;
     _art = _this select 1;
     if (not ((_text == "") or (_text == " ")) ) then {
@@ -246,7 +221,7 @@ buildings_list = {
 buildings_protect = {
 	{
 		_x allowDamage false;
-	} foreach (call buildings_list);
+	} foreach ([] call buildings_list);
 };
 
 format_integer = {
@@ -296,6 +271,7 @@ strstr = {
 	if (typeName _needle != "STRING") exitWith {false};
 	if (typeName _haystack != "STRING") exitWith {false};
 	
+	private["_needle_array", "_haystack_array"];
 	_needle_array = toArray _needle;
 	_haystack_array = toArray _haystack;
 	
@@ -322,5 +298,141 @@ strstr = {
 };
 
 
+Tear_gas = {
+		private["_projectile", "_ammo", "_Bpos", "_array", "_timenow"];
+		
+		_projectile = _this select 0;
+		_ammo = _this select 1;
+		
+		if ((typeName _projectile) != "OBJECT") exitwith {};
+		if (isNull _projectile) exitwith {};
+		
+		_Bpos = [0,0,0];
+		while {(speed _projectile) > 0} do {
+				_Bpos = getPosATL _projectile;
+			};
+		
+		_timenow = time;
+		_array = [];	
+		
+		while{(time < (_timenow + 10)) || (!(isnull _projectile))}do {
+					sleep 1;
+					if(!(isnull _projectile))then{
+							if(count(nearestObjects [_Bpos, ["Man"], 10]) > 0)then{
+								{
+									_x setVariable ["flashed",true, true];
+									_array set [count _array,_x];
+								} foreach nearestObjects [_Bpos, ["Man"], 10];			
+							}else{			
+								{
+									_x setVariable ["flashed",false, true];	
+								}foreach _array;				
+								_array = [];
+							};
+					};
+			};	
+	};
 
-call buildings_protect;
+setPitchBank = {
+	private ["_obj","_pitch","_bank","_yaw","_vdir","_vup","_s ign","_sign"];
+
+	_obj = _this select 0;
+	_pitch = _this select 1;
+	_bank = _this select 2;
+
+	_yaw = 360-(getdir _obj);
+	
+	
+	//find vector dir (pitch)
+
+	_sign = [1,-1] select (_pitch < 0);
+
+	while {abs _pitch > 180} do {_pitch = _sign*(abs _pitch - 180)};
+
+	if(abs _pitch == 90) then {_pitch = _sign*(89.9)};
+
+	if(abs _pitch > 90) then {
+		_obj setdir (getdir _obj)-180;
+		_yaw = 360-(getdir _obj);
+		_bank = _bank + 180;
+		_pitch = (180 - abs _pitch)*_sign;
+	};
+
+	_vdir = [0, cos _pitch, sin _pitch];
+
+	_vdir = [_vdir, _yaw] call setPitchBank_rotate;
+
+	
+	//find vector up (bank)
+	_sign = [1,-1] select (_bank < 0);
+
+	while {abs _bank > 360} do {_bank = _sign*(abs _bank - 360)};
+
+	if(abs _bank > 180) then {_sign = -1*_sign; _bank = (360-_bank)*_sign};
+
+	_vup = [sin _bank, 0, cos _bank];
+	_vup = [_vup select 0] + ([[_vup select 1, _vup select 2], _pitch] call setPitchBank_rotate);
+	_vup = [_vup, _yaw] call setPitchBank_rotate;
+
+	
+	//apply the vectors
+	_obj setVectorDirAndUp [_vdir, _vup];
+};
+
+setPitchBank_rotate = {
+	private ["_v","_d","_x","_y"];
+	_v = +(_this select 0); //we don't want to modify the originally passed vector
+	_d = _this select 1;
+	_x = _v select 0;
+	_y = _v select 1;
+	_v set [0, (cos _d)*_x - (sin _d)*_y];
+	_v set [1, (sin _d)*_x + (cos _d)*_y];
+	_v
+};
+
+respawn_location = {
+	private["_unit","_side","_sideString","_marker"];
+	_unit = _this select 0;
+	_side = [_unit] call player_side;
+	_sideString = "";
+	_marker = "respawn_%1";
+	
+	if (_side == resistance) then {
+		_sideString = "guerrila";
+	}else{
+		_sideString = str(_side);
+	};
+	
+	_marker = format[_marker, _sideString];
+	
+	(getMarkerPos _marker)
+};
+
+findTurrets_Recurse = {
+	private ["_root", "_class", "_path", "_currentPath","_result"];
+	_root = (_this select 0);
+	_path = (_this select 1);
+	_result = [];
+	_resultSub = [];
+	_currentPath = [];
+	
+	private["_i"];
+	for [{_i=0}, {_i < (count _root)}, {_i=_i+1}] do {
+		_class = _root select _i;
+		if (isClass _class) then {
+			_currentPath = + _path;
+			_currentPath set[(count _path), _i];
+			_result set [count _result, _currentPath];
+			_subsub = _class >> "turrets";					
+			if ((count _subsub) > 0) then {
+				_resultSub = [_subsub, _currentPath] call findTurrets_Recurse;
+				{
+					_result set[(count _result), _x];
+				} forEach _resultSub;
+			};
+		};
+	};
+	_result
+};
+
+[] call buildings_protect;

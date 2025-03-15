@@ -1,39 +1,47 @@
-liafu = true;
-
-if([player, "isstunned"] call player_get_bool) exitWith {};
-
+private["_stunned","_restrained","_arrest","_exit"];
 _stunned = [player, "isstunned"] call player_get_bool;
 _restrained = [player, "restrained"] call player_get_bool;
+_arrest = [player] call player_get_arrest;
 
-if( (typeName _stunned == "BOOL") ) then {
-	if( _stunned ) exitwith {};
-};
+_exit = false;
 
-if( (typeName _restrained == "BOOL") ) then {
-	if( _restrained ) exitwith {};
-};
+if(_stunned) exitwith {server globalChat "Cannot use headbug at this time";};
+if(_restrained) exitwith {server globalChat "Cannot use headbug at this time";};
+if(_arrest) exitwith {server globalChat "Cannot use headbug at this time";};
 
 if(vehicle player != player) exitWith {hint "You must be on foot"};
 titleCut ["","black faded", 0];
-_pos = position player;
+
+private["_pos","_dir"];
+_pos = getPosATL player;
 _dir = direction player;
-_vec = objNull;
 
-_vecs = nearestObjects [getpos player, ["Car","Tank","Air","Ship"], 10];
-
-if(count _vecs >0) then {
-	_vec = _vecs select 0;
-	_freeseats = _vec emptyPositions "cargo";
-	if(_freeseats > 0) then {player moveincargo _vec};
+private["_exit"];
+_exit = false;
+if (isNil "headbugbus") then {
+		headbugbus = objNull;
+	}else{
+		if !(isNull headbugbus) then {
+			_exit = true;
+		};
+	};
+if _exit exitwith {
+	server globalChat "HEADBUG ERROR";
+	titleCut["", "BLACK in",2];
 };
-
-if(vehicle player != player) exitWith {titleCut["", "BLACK in",2]};
+	
+headbugbus = "Ikarus_TK_CIV_EP1" createVehicleLocal [-10,-10,0];
 
 player moveincargo headbugbus;
-waitUntil {vehicle player != player};
+waitUntil {(vehicle player) != player};
+
 unassignVehicle player;
 player action ["Eject",vehicle player];
-waitUntil {vehicle player == player};
-player setpos _pos;
-player setdir _dir;
+waitUntil {(vehicle player) == player};
+
+player setPosATL _pos;
+player setDir _dir;
+
+deleteVehicle headbugbus;
+
 titleCut["", "BLACK in",2];

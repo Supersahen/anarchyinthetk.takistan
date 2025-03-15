@@ -1,4 +1,5 @@
 // new version of assassin mission with vip and guards armed, car,  new spawn locations, bug fixes and more stability by Scripter Eddie Vedder
+private["_secondcounter", "_minutecounter", "_art"];
 _secondcounter = 0;
 _minutecounter = 0;
 _art = (_this select 3) select 0;
@@ -37,6 +38,8 @@ if (_art == "getajob_assassin") then {
 	if(workplacejob_assassion_failed) exitWith {
 		player groupChat "You have failed an assassination recently, maybe you'll be hired again later.";
 	};
+	
+	private["_array","_city","_pos","_radius","_a1","_group"];
 
 	_array  = [[VIPspawn1, 10], [VIPspawn2, 10], [VIPspawn3, 10], [VIPspawn4, 10], [VIPspawn5, 10]];
 	_city   = (floor(random(count _array)));
@@ -53,7 +56,6 @@ if (_art == "getajob_assassin") then {
 
 	//creating VIP
 	_group = createGroup east;
-	//[format["%1 (%2, %3, %4) - assasination: group created %5",  round(time), player, (name player), (getPlayerUID player), _group]] call l4a;
 
 	VIPtarget = _group createUnit ["Functionary1_EP1", _pos, [], _radius, "FORM"];
 	VIPtarget setvehicleinit 'VIPtarget = this;this setVehicleVarName "VIPtarget";';
@@ -112,14 +114,15 @@ if (_art == "getajob_assassin") then {
 	};
 
 	format["workplacejob_assassin_serverarray = workplacejob_assassin_serverarray + [[%1, VIPtarget]];", player] call broadcast;
-
+	
+	private["_markerobj", "_markername", "_markerobj"];
+	
 	_markerobj = createMarker ["targetmarker",[0,0]];
-	_markername= "targetmarker";
+	_markername = "targetmarker";
 	_markerobj setMarkerShape "ICON";
 	"targetmarker" setMarkerType "Marker";
 	"targetmarker" setMarkerColor "ColorRed";
 	"targetmarker" setMarkerText "Assassination target";
-	_markername SetMarkerPos _start;
 
 	workplacejob_assassin_active = true; publicvariable "workplacejob_assassin_active";
 
@@ -128,7 +131,7 @@ if (_art == "getajob_assassin") then {
 	"if (iscop) then {player sideChat ""Someone is trying to kill a government VIP. The target has been marked on the map. Rescue the target before its too late!""};" call broadcast;
 
 	player groupchat "The police are on to you and the VIP knows your coming, hurry up!";
-	[player, "(assassin)", 100000] call player_update_warrants;
+	[player, "(assassin)", 100000, -1, false] call player_update_warrants;
 	VIPtarget domove getmarkerpos "policebase";
 	
 	while {true} do {
@@ -166,7 +169,7 @@ if (_art == "getajob_assassin") then {
 			player groupchat "Well done. Target elimated. $200000 has been transfered to your account.";
 			sleep 10;
 			"server globalchat ""The VIP target has been killed!"";" call broadcast;
-			[player, "(vip-assasination)", 100000] call player_update_warrants;
+			[player, "(vip-assasination)", 100000, -1, false] call player_update_warrants;
 			deletevehicle VIPtarget;
 			deletemarker "targetmarker";
 			deletevehicle assveh;
@@ -209,7 +212,5 @@ if (_art == "getajob_assassin") then {
 		workplacejob_assassion_failed = false;
 	};
 };
-
-liafu = format["%1", (name player)];
 
 // written by eddie vedder

@@ -1,5 +1,6 @@
 #include "Awesome\Functions\macro.h"
 
+private["_art"];
 _art = ((_this select 3) select 0);
 
 if (_art == "getajob_search") then {
@@ -16,6 +17,8 @@ if (workplacejob_search_cancel == 1) exitWith {
 	player groupChat localize "STRS_workplacemission_nochgesperrt";
 };
 
+private["_searchjob", "_searchmsg", "_searchobj", "_objposarray", "_objectlogic", "_objectposition", "_objectradius", "_objectradius2", "_searchobject", "_action", "_action2", "_distancenachricht", "_money"];
+
 alreadygotaworkplacejob = 2;
 _searchjob      = floor(random(count workplacejob_searchmessages));
 _searchmsg      = (workplacejob_searchmessages select _searchjob);
@@ -27,7 +30,6 @@ _objectposition = getpos (_objectlogic);
 _objectradius   = _objposarray select 1;
 _objectradius2  = _objposarray select 2;
 _searchobject = _searchobj createVehicleLocal [((_objectposition select 0)+(random(_objectradius)-random(_objectradius))), ((_objectposition select 1)+(random(_objectradius2)-random(_objectradius2))), _objectposition select 2];
-liafu = true;
 player groupChat _searchmsg;
 _action            = 0;
 _action2	   = 0;
@@ -38,7 +40,6 @@ timetaken          = 0;
 inf		   = 0;
 
 while {true} do {
-
 	if ((player distance workplace_getjobflag_1 <= 5) and (alreadygotaworkplacejob == 2) and (_action == 0)) then {
 		workplace_searchaction_cancel = player addAction [localize "STRS_workplacemission_addaction_searchjob_cancel", "search.sqf", ["canceljob_search", _searchobject]];
 		_action = 1;

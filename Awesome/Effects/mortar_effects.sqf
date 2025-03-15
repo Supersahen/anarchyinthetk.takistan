@@ -1,4 +1,39 @@
+M_smoke = "SmokeShell";
 
+//	SmokeShell
+//	SmokeShellBlue
+//	SmokeShellGreen
+//	SmokeShellOrange
+//	SmokeShellPurple
+//	SmokeShellRed
+//	SmokeShellYellow
+
+//	G_40mm_Smoke
+//	G_40mm_SmokeGreen
+//	G_40mm_SmokeRed
+//	G_40mm_SmokeYellow
+
+M_flare = "F_40mm_Yellow";
+
+//F_40mm_Green
+//F_40mm_Red
+//F_40mm_White
+//F_40mm_Yellow
+
+	M_ill_style = "highest";
+//	M_ill_style = "timed";
+//		M_ill_delay = 10;
+//	M_ill_style = "height";
+//		M_ill_height = 100;	
+
+//	M_ill_lit = "F";
+//	M_ill_lit = "T";
+//		M_ill_time = 60;
+//	M_ill_lit = "G";
+//		M_ill_decent = 0.0075;
+M_ill_lit = "TG";
+M_ill_time = 60;
+M_ill_decent = 0.0075;
 
 M_effect_WP = {
 	private ["_decal_dir", "_pos_projectile"];
@@ -25,7 +60,7 @@ M_effect_WP = {
 	]
 	, [], 0, "NONE"];
 
-	createVehicle [M_smoke, 
+/*	createVehicle [M_smoke, 
 	[
 		(_pos_projectile select 0) + 5*cos (_decal_dir+90),
 		(_pos_projectile select 1) + 5*sin (_decal_dir+90),
@@ -40,6 +75,7 @@ M_effect_WP = {
 		0
 	]
 	, [], 0, "NONE"];
+*/
 
 	createVehicle [M_smoke, 
 	[
@@ -54,16 +90,16 @@ M_effect_IL = {
 	private ["_projectile", "_pos", "_M_time" ,"_flare", "_flareH", "_choice"];
 	
 	_projectile = _this select 0;
-	_pos = getpos _projectile;
+	_pos = getPosATL _projectile;
 	_choice = _this select 1;
 	
 	switch _choice do {
 		case "F": {
-			_pos = getpos _projectile;
+			_pos = getPosATL _projectile;
 			while {alive _projectile} do {
 				_flare = M_flare createVehicle _pos;
 				while {alive _flare} do {
-					_pos = getpos _projectile;
+					_pos = getPosATL _projectile;
 					_flare setPosATL _pos;
 					if (!alive _projectile) then {
 						deleteVehicle _flare;
@@ -74,7 +110,7 @@ M_effect_IL = {
 		};
 		case "T": {
 			deleteVehicle _projectile;
-			_pos = getpos _projectile;
+			_pos = getPosATL _projectile;
 			
 			_M_time = time + M_ill_time;
 			
@@ -88,7 +124,7 @@ M_effect_IL = {
 			deleteVehicle _flare;
 		};
 		case "G": {
-			_pos = getpos _projectile;
+			_pos = getPosATL _projectile;
 			deleteVehicle _projectile;
 		
 			_flareH = true;
@@ -107,7 +143,7 @@ M_effect_IL = {
 			deleteVehicle _flare;
 		};
 		case "TG": {
-			_pos = getpos _projectile;
+			_pos = getPosATL _projectile;
 			deleteVehicle _projectile;
 		
 			_M_time = time + M_ill_time;

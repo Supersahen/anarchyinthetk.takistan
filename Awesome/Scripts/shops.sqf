@@ -1,10 +1,17 @@
+private[
+		"_emptyshop", "_fs", "_is", "_pub", "_gs", "_es", "_cu", "_cs", "_ts", "_as", "_as_1", "_td", "_ms", "_rs", "_gds", "_os",
+		"_gangshop_buy", "_db1", "_db2", "_db3", "_dsc", "_dsm", "_dsl", "_dsh", "_cv", "_ca", "_sv", "_sa", "_pmcveh", "_pmcair", "_copshop", 
+		"_copshop_patrol", "_copshop_response", "_copshop_sobr", "_pmcs", "_terrorshop_buy", "_smgrw", "_smgrveh", "_fm", "_bm", "_bm1", "_hash",
+		"_igs", "_ihs", "_isup", "_bt", "_ihvy", "_iair", "_rgs", "_rsup", "_rhs", "_rlt", "_rhvy", "_rair", "_carparts", "_as_2",
+		"_fs1", "_fs2", "_fs3", "_fs4", "_fs5", "_fs6", "_hp", "_russ", "_bank"
+		
+	];
+
 _emptyshop = [];
 
 shop_list_item = 0;
 shop_list_stock = 1;
 shop_list_stock_max = 2;
-
-["LandRover_MG_TK_EP1", -1, -1],
 
 //Fishing Shop
 //Syphon Refuel kit, Refuel Can, Small Repair Kit, Large Repair Kit
@@ -17,7 +24,7 @@ _fs =
 	];
 
 //Item Shop
-//perch, trout, walleye, bass, Bread, Medikit, Mobile phone, Lighter, Fishing Rod
+//perch, trout, walleye, bass, Bread, Medikit, Mobile phone, Fishing Rod
 _is = 
 	[
 		["perch", 20, 40],
@@ -26,8 +33,6 @@ _is =
 		["bass", 20, 40],
 		["Bread", 10, 20],
 		["medikit", 0, 10],
-		["handy", -1, -1],
-		["lighter", -1, -1],
 		["fishingpole", -1, -1]
 	];
 	
@@ -72,7 +77,6 @@ _gs =
 //Binocular, GPS, lockpick, Fuelline, Stone
 _es = 
 	[
-		["handy", 80, 80],
 		["Binocular", 80, 80],
 		["GPS", 40, 80],
 		["lockpick", 30, 30],
@@ -137,6 +141,7 @@ _cs =
 _ts = 
 	[
 		["Tractor", 5, 50],
+		["tractorOld", 5, 50],
 		["Ikarus", 5, 20],
 		["Ikarus_TK_CIV_EP1", 5, 20],
 		["Ural_TK_CIV_EP1", 5, 20],
@@ -223,13 +228,13 @@ _os =
 //Gangarea Shops
 _gangshop_buy =
 	[
+		["cracker", 4, 10],
 		["GPS_ill", -1, -1],
 		["Binocular_ill", -1, -1],
 		["NVGoggles_ill", -1, -1],
 		["kleinesreparaturkit", -1, -1],
 		["reparaturkit", -1, -1],
 		["lockpick", -1, -1],
-		["lighter", -1, -1],
 		["Fuelline", -1, -1],
 		["kanister", -1, -1],
 		["medikit", -1, -1],
@@ -329,7 +334,7 @@ _cv =
 _ca = 
 	[
 		["MV22", -1, -1],
-		["C130J", -1, -1],
+		["C130J_US_EP1", -1, -1],
 		["An2_TK_Cop", -1, -1],
 		["L39_UN", -1, -1]
 	];
@@ -337,7 +342,6 @@ _ca =
 //Cop SOBR Vehicle Shop
 _sv = 
 	[
-		["LandRover_MG_TK_EP1", -1, -1],
 		["M113_UN_EP1", -1, -1],
 		["M113Ambul_UN_EP1", -1, -1],
 		["HMMWV", -1, -1],
@@ -349,10 +353,7 @@ _sv =
 		["HMMWV_M1151_M2_CZ_DES_EP1", -1, -1],
 		//["M1114_DSK_ACR", -1, -1],
 		//["M1114_AGS_ACR", -1, -1],
-		["BAF_Jackal2_L2A1_D", -1, -1],
-		["ArmoredSUV_PMC", -1, -1],
-		["LandRover_SPG9_TK_EP1", -1, -1],
-		["LAV25_HQ", -1, -1]
+		["BAF_Jackal2_L2A1_D", -1, -1]
 	];
 
 //SOBR Air Shop
@@ -368,7 +369,8 @@ _sa =
 		["UH60M_EP1", -1, -1],
 		["CH_47F_EP1", -1, -1],
 		["UH60M_MEV_EP1", -1, -1],
-		["Ka60_PMC", -1, -1]
+		["UH1Y", -1, -1],
+		["AW159_Lynx_BAF", -1, -1]
 	];
 
 // PMC land vehicles
@@ -394,6 +396,7 @@ _pmcair =
 	[
 		["MH6J_EP1", -1, -1],
 		["Ka60_PMC", -1, -1],
+		["Ka60_GL_PMC", -1, -1],
 		["UH60M_MEV_EP1", -1, -1],
 		["BAF_Merlin_PMC", -1, -1]
 	];
@@ -401,7 +404,6 @@ _pmcair =
 //COP Shop
 _copshop =
 	[
-		["handy", -1, -1],
 		["kleinesreparaturkit", -1, -1],
 		["reparaturkit", -1, -1],
 		["kanister", -1, -1],
@@ -548,9 +550,14 @@ _copshop_sobr =
 		["BAF_L85A2_UGL_SUSAT", -1, -1],
 		["BAF_L86A2_ACOG", -1, -1],
 		["Rnd_556x45_Stanag", -1, -1],
+		["M4A1_Aim_camo", -1, -1],
+		["M4A1_HWS_GL_camo", -1, -1],
 		["M4A3_RCO_GL_EP1", -1, -1],
 		["M4A3_CCO_EP1", -1, -1],
 		["Rnd_556x45_Stanag", -1, -1],
+		["M4A1_AIM_SD_camo", -1, -1],
+		["M4A1_HWS_GL_SD_Camo", -1, -1],
+		["Rnd_556x45_StanagSD", -1, -1],
 		["SCAR_H_CQC_CCO", -1, -1],
 		["SCAR_H_STD_EGLM_Spect", -1, -1],
 		["rnd_762x51_B_SCAR",  -1, -1],
@@ -563,6 +570,7 @@ _copshop_sobr =
 		["Mk_48", -1, -1],
 		["Mk_48_DES_EP1", -1, -1],
 		["M60A4_EP1", -1, -1],
+		["M249_200", -1, -1],
 		["M249_EP1", -1, -1],
 		["Rnd_100_M249", -1, -1],
 		["M240", -1, -1],
@@ -610,7 +618,6 @@ _copshop_sobr =
 //PMC Items
 _pmcs        =
 	[
-		["handy", -1, -1],
 		["GPS", -1, -1],
 		["NVGoggles", -1, -1],
 		["Binocular", -1, -1],
@@ -729,7 +736,6 @@ _pmcs        =
 //Terror Shop
 _terrorshop_buy = 
 	[
-		["handy", -1, -1],
 		["GPS_ill", -1, -1],
 		["Binocular_ill", -1, -1],
 		["Binocular_Vector_ill", -1, -1],
@@ -752,11 +758,11 @@ _terrorshop_buy =
 		["gasmask", -1, -1],
 		["stun_light_ter", -1, -1],
 		["selbstmordbombe", -1, -1],
-		["fernzuenderbombe", -1, -1],
-		["zeitzuenderbombe", -1, -1],
-		["aktivierungsbombe", -1, -1],
-		["geschwindigkeitsbombe", -1, -1],
-		["fernzuender", -1, -1],
+//		["fernzuenderbombe", -1, -1],
+//		["zeitzuenderbombe", -1, -1],
+//		["aktivierungsbombe", -1, -1],
+//		["geschwindigkeitsbombe", -1, -1],
+//		["fernzuender", -1, -1],
 		["Colt_ill", -1, -1],
 		["Rnd_45ACP_1911", -1, -1],
 		["revolver_ill", -1, -1],
@@ -786,8 +792,6 @@ _terrorshop_buy =
 		["Rnd_762x39_AK47", -1, -1],
 		["Sa58P_EP1", -1, -1],
 		["Sa58V_EP1", -1, -1],
-		["Sa58V_CCO_EP1", -1, -1],
-		["Sa58V_RCO_EP1", -1, -1],
 		["Rnd_762x39_SA58", -1, -1],
 		["AKS74U", -1, -1],
 		["AKS_74_UN_kobra", -1, -1],
@@ -846,14 +850,12 @@ _terrorshop_buy =
 //Smuggler Weapons
 _smgrw =
 	[
-		["handy", -1, -1],
 		["GPS_ill", -1, -1],
 		["Binocular_ill", -1, -1],
 		["NVGoggles_ill", -1, -1],
 		["kleinesreparaturkit", -1, -1],
 		["reparaturkit", -1, -1],
 		["lockpick", -1, -1],
-		["lighter", -1, -1],
 		["Fuelline", -1, -1],
 		["kanister", -1, -1],
 		["medikit", -1, -1],
@@ -1022,10 +1024,10 @@ _igs =
 		["Rnd_SmokeGreen_GP25", -1, -1],
 		["Rnd_SmokeYellow_GP25", -1, -1],
 		["MineE", -1, -1],
-		["Garbage IED Small", -1, -1],
-		["Garbage IED Large", -1, -1],
-		["Ground IED Small", -1, -1],
-		["Ground IED Large", -1, -1],
+		["GarbageIEDSmall_PMC", -1, -1],
+		["GroundIEDSmall_PMC", -1, -1],
+		["GarbageIEDLarge_PMC", -1, -1],
+		["GroundIEDLarge_PMC", -1, -1],
 		["TK_ALICE_Pack_EP1", -1, -1],
 		["TK_Assault_Pack_EP1", -1, -1],
 		["TK_RPG_Backpack_EP1", -1, -1],
@@ -1043,7 +1045,6 @@ _ihs =
 
 _isup = 
 	[
-		["handy", -1, -1],
 		["lockpick", -1, -1],
 		["medikit", -1, -1],
 		["kleinesreparaturkit", -1, -1],
@@ -1058,11 +1059,11 @@ _isup =
 		["Mammo_WP", -1, -1],
 		["Mammo_IL", -1, -1],
 		["selbstmordbombe", -1, -1],
-		["fernzuenderbombe", -1, -1],
-		["zeitzuenderbombe", -1, -1],
-		["aktivierungsbombe", -1, -1],
-		["geschwindigkeitsbombe", -1, -1],
-		["fernzuender", -1, -1],
+//		["fernzuenderbombe", -1, -1],
+//		["zeitzuenderbombe", -1, -1],
+//		["aktivierungsbombe", -1, -1],
+//		["geschwindigkeitsbombe", -1, -1],
+//		["fernzuender", -1, -1],
 		["gasmask", -1, -1],
 		["stun_light_ter", -1, -1]
 	];
@@ -1082,6 +1083,7 @@ _bt =
 _ihvy = 
 	[
 		["LandRover_Special_CZ_EP1", -1, -1],
+		["LandRover_MG_TK_INS_EP1", -1, -1],
 		["Offroad_SPG9_TK_GUE_EP1", -1, -1],
 		["BTR40_MG_TK_GUE_EP1", -1, -1],
 		["BTR40_TK_GUE_EP1", -1, -1],
@@ -1093,7 +1095,7 @@ _ihvy =
 
 _iair = 
 	[
-		["An2_TK_EP1", -1, -1]
+		["An2_TK_Ind", -1, -1]
 	];
 
 _rgs = 
@@ -1154,8 +1156,6 @@ _rgs =
 		["AK_107_GL_kobra", -1, -1],
 		["AKS74GOSHAWK", -1, -1],
 		["AKS_74_NSPU", -1, -1],
-		["Sa58V_CCO_EP1", -1, -1],
-		["Sa58V_RCO_EP1", -1, -1],
 		["Rnd_762x39_SA58", -1, -1],
 		["PK", -1, -1],
 		//["UK59_ACR", -1, -1],
@@ -1207,7 +1207,6 @@ _rgs =
 
 _rsup = 
 	[
-		["handy", -1, -1],
 		["lockpick", -1, -1],
 		["medikit", -1, -1],
 		["kleinesreparaturkit", -1, -1],
@@ -1258,13 +1257,15 @@ _rhvy =
 		["GAZ_Vodnik", -1, -1],
 		["GAZ_Vodnik_MedEvac", -1, -1],
 		["UAZ_SPG9_INS", -1, -1],
-		["BRDM2_HQ_TK_GUE_EP1", -1, -1],
-		["BTR90_HQ", -1, -1]
+		["LandRover_MG_TK_EP1", -1, -1],
+		["LandRover_SPG9_TK_EP1", -1, -1],
+		["BRDM2_HQ_TK_GUE_EP1", -1, -1]
 	];
 
 _rair = 
 	[
-		["An2_TK_EP1", -1, -1],
+		["An2_TK_Opf", -1, -1],
+		["Pchela1T", -1, -1],
 		["L39_TK_EP1", -1, -1]
 	];
 
@@ -1287,7 +1288,7 @@ _as_2 =
 		["Offroad_DSHKM_Gue", 5, 5],
 		["Pickup_PK_GUE", 5, 5],
 		["GAZ_Vodnik", 5, 5],
-		["An2_TK_EP1", 5, 5],
+		["An2_TK_Ind", 5, 5],
 		["UH1H_TK_EP1", 5, 5]
 	];
 
@@ -1295,6 +1296,7 @@ _as_2 =
 _fs1 =
 	[
 		["SearchLight_UN", -1, -1],
+		["MGNEST_M240", -1, -1],
 		["Wire", -1, -1],
 		["Hedgehog", -1, -1],
 		["BagFenceC", -1, -1],
@@ -1369,6 +1371,7 @@ _fs3 =
 _fs4 =
 	[
 		["GuerillaCacheBox_EP1", -1, -1],
+		["MGNEST_PK1", -1, -1],
 		["Wire", -1, -1],
 		["Hedgehog", -1, -1],
 		["Fort_Crate_wood", -1, -1],
@@ -1395,7 +1398,8 @@ _fs4 =
 // Opfor
 _fs5 =
 	[
-		["SearchLight_UN", -1, -1],
+		["SearchLight_TK_EP1", -1, -1],
+		["MGNEST_PK2", -1, -1],
 		["GuerillaCacheBox_EP1", -1, -1],
 		["Wire", -1, -1],
 		["Hedgehog", -1, -1],
@@ -1426,6 +1430,7 @@ _fs5 =
 _fs6 =
 	[
 		["GuerillaCacheBox_EP1", -1, -1],
+		["MGNEST_PK1", -1, -1],
 		["Wire", -1, -1],
 		["Hedgehog", -1, -1],
 		["Fort_Crate_wood", -1, -1],
@@ -1465,8 +1470,6 @@ _russ =
 		["Binocular_ill", -1, -1],
 		["NVGoggles_ill", -1, -1],
 		["lockpick", -1, -1],
-		["lighter", -1, -1],
-		["handy", -1, -1],
 		["medikit", -1, -1],
 		["stun_light_ill", -1, -1],
 		["M9_ill", -1, -1],
@@ -1522,6 +1525,10 @@ _russ =
 		["Rnd_762x54_PK", -1, -1],
 		["SVD_ill", -1, -1],
 		["Rnd_762x54_SVD", -1, -1]
+	];
+	
+_bank = [
+		["bankversicherung", -1, -1]
 	];
 	
 INV_ItemShops_Object = 0;
@@ -1621,8 +1628,8 @@ INV_ItemShops = [
 
 		[terrorshop,"Terrorist Shop",tgunbox,dummyobj,_terrorshop_buy,_terrorshop_buy,true],
 
-		[vipbox,"Illegal Weapon Shop",vipbox,dummyobj,_smgrw,_smgrw,true],
-		[vipcar,"Stolen Vehicles",dummyobj,vipcarspawn,_smgrveh,_smgrveh,true],
+		[illBox,"Illegal Weapon Shop",illBox,dummyobj,_smgrw,_smgrw,true],
+		[illcar,"Stolen Vehicles",dummyobj,illcarspawn,_smgrveh,_smgrveh,true],
 
 		[fishmonger,"Sell to Fishmonger",dummyobj,dummyobj,_fm,_fm,true],
 
@@ -1646,6 +1653,7 @@ INV_ItemShops = [
 		[redairveh,"Aircraft",dummyobj,redairspawn,_rair,_rair,true],
 
 		[cparts,"Car Parts",dummyobj,dummyobj,_carparts,_carparts,true],
+		[cparts2,"Car Parts",dummyobj,dummyobj,_carparts,_carparts,true],
 
 		[airshop3,"Armed Vehicles",dummyobj,asairspawn3,_as_2,_as_2,true],
 
@@ -1658,13 +1666,32 @@ INV_ItemShops = [
 
 		[hpcar,"Hospital Vehicle Shop",dummyobj,hospitalspawn,_hp,_hp,true],
 
-		[russmuggler,"Russian Arms Dealer",rusgunbox,dummyobj,_russ,_russ,true]
+		[russmuggler,"Russian Arms Dealer",rusgunbox,dummyobj,_russ,_russ,true],
+		
+		[mainbankShop,"Bank Insurance",dummyobj,dummyobj,_bank,_bank,true]
 	];
 
+INV_ItemShops_IgnoreObjects = [];
+
+{
+	private["_array","_shop","_Spawn1","_Spawn2"];
+	_array = _x;
+	_shop = _array select 0;
+	_Spawn1 = _array select 1;
+	_Spawn2 = _array select 2;
+	if !(_shop in INV_ItemShops_IgnoreObjects) then {
+			INV_ItemShops_IgnoreObjects set[(count INV_ItemShops_IgnoreObjects), _shop];
+		};
+	if !(_Spawn1 in INV_ItemShops_IgnoreObjects) then {
+			INV_ItemShops_IgnoreObjects set[(count INV_ItemShops_IgnoreObjects), _Spawn1];
+		};
+	if !(_Spawn2 in INV_ItemShops_IgnoreObjects) then {
+			INV_ItemShops_IgnoreObjects set[(count INV_ItemShops_IgnoreObjects), _Spawn2];
+		};
+} forEach INV_ItemShops;
 
 
-
-//buidld the INV_ItemMaxStocks array
+//build the INV_ItemMaxStocks array
 if (isServer) then {
 	INV_ItemMaxStocks = [];
 	private["_i"];
@@ -1690,7 +1717,7 @@ if (isServer) then {
 	publicVariable "INV_ItemMaxStocks";
 };
 
-//buidld the INV_ItemStocks array
+//build the INV_ItemStocks array
 if (isServer) then {
 	INV_ItemStocks = [];
 	private["_i"];

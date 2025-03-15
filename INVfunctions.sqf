@@ -1,27 +1,78 @@
-// "Function-Call" Script.
-// invActions.sqf
+#define SleepWait(timeA) private["_waittt"]; _waittt = time + timeA; waitUntil {time >= _waittt};
+
 
 INV_Heal = {
+	private["_paramedic","_medic","_damage"];
+	
+	_paramedic = ("paramedic_license" call INV_HasLicense);
+	_medic = [player] call FA_isMedic;
+	
+	_damage = 0.3;
+	
+	if (_paramedic) then {
+			if (_medic) then {
+					_damage = 0;
+				}else{
+					_damage = 0.1;
+				};
+		};
+	
+	if ((_paramedic) && ((damage _this) <= _damage)) exitwith {
+			
+			format ["%1 switchmove ""AinvPknlMstpSlayWrflDnon_medic"";", player] call broadcast;
+			player groupChat "Healing...";
+			SleepWait(5)
+			
+			if (_this == player) then {
+					_this setHit["legs",0];
+				}else{
+					format['
+						if(local %1)then{
+								%1 setHit ["legs", 0];
+								%1 groupchat "You have been healed by %2-%3";
+							};
+					', _this, player, name(player)] call broadcast;
+				};
+			
+			player groupChat "Legs healed, but nothing more can be done with the medkit";
+			true
+		};
+	
+	if (((damage _this) <= _damage)) exitwith {
+			player groupChat "Cannot be healed anymore with a medkit";
+			false
+		};
+	
 	if(_this == player) exitWith {
-		liafu = true;
-
 		format ["%1 switchmove ""AinvPknlMstpSlayWrflDnon_medic"";", player] call broadcast;
 		player groupChat format[localize "STRS_inv_items_medikit_benutzung"];
-		sleep 5;
-		player setdamage 0;
+		SleepWait(5)
+		player setdamage _damage;
+		player setHit ["legs", 0];
+		[_this] call player_client_saveDamage;
 		player groupChat format[localize "STRS_inv_items_medikit_fertig"];
 		true
 	};
 	
-	format ["%1 switchmove ""AinvPknlMstpSlayWrflDnon_medic"";", _this] call broadcast;
-	player groupChat "Healing civ...";
-	sleep 5;
-	_this setdamage 0;
-
+	format ["%1 switchmove ""AinvPknlMstpSlayWrflDnon_medic"";", player] call broadcast;
+	player groupChat "Healing...";
+	SleepWait(5)
+	
+	format['
+	if(local %1)then{
+			%1 setdamage %4;
+			%1 setHit ["legs", 0];
+			
+			[%1] call player_client_saveDamage;
+			%1 groupchat "You have been healed by %2-%3";
+		};
+	', _this, player, name(player), _damage] call broadcast;
+	
 	true
 };
 
 INV_AddInventoryItem = {
+	//player groupChat format["INV_AddInventoryItem %1", _this];
 	private ["_object", "_item", "_amount", "_info"];
 	_object = _this select 0;
 	_item  = _this select 1;
@@ -58,7 +109,7 @@ INV_CheckArray = {
 		_object setVariable [_array_name, [], true];
 	};
 	
-	if (typeName _array_variable != "ARRAY") exitWith {
+	if ((typeName _array_variable) != "ARRAY") exitWith {
 		_object setVariable [_array_name, [], true];
 	};
 };
@@ -117,8 +168,12 @@ INV_GetStorageAmount = {
 	_arrname  = _this select 2;
 	
 	[_object, _arrname] call INV_CheckArray;
+	
+	
+	
 	private["_Array"];
-	_Array = _object getVariable _arrname;
+	_array = [];
+	_Array = _object getVariable [_arrname, []];
 	
 	private["_Result", "_i"];
 	_Result = 0;
@@ -149,6 +204,7 @@ INV_GetItemAmount = {
 
 // Change Amount of Items
 INV_SetStorageAmount = {
+	//player groupChat format["INV_SetStorageAmount %1", _this];
 	private ["_object", "_Itemname", "_number", "_Arrayname"];
 	_object = _this select 0;
 	_Itemname  = _this select 1;
@@ -184,6 +240,7 @@ INV_SetStorageAmount = {
 
 // Change Amount of Items
 INV_SetItemAmount = {
+	//player groupChat format["INV_SetItemAmount %1", _this];
 	private["_object", "_item", "_number"];
 	_object = _this select 0;
 	_item = _this select 1;
@@ -250,26 +307,23 @@ INV_StorageRemoveKindOf = {
 
 // Check Stored Item Weight
 INV_GetStorageWeight = {
-	private ["_object", "_Arrayname"];
+	private ["_object", "_Arrayname", "_weight"];
 	_object = _this select 0;
 	_Arrayname = _this select 1;
 	
 	[_object, _Arrayname] call INV_CheckArray;
 	
-	private["_weight"];
 	_weight = 0;
-
+	
+	private["_entry", "_item", "_count", "_infos", "_item_weight"];
 	{
-		private["_entry", "_item", "_count", "_infos", "_item_weight"];
 		_entry = _x;
 		_item = _entry select 0;
 		_count = [(_entry select 1)] call decode_number;
 		_infos  = _item call INV_GetItemArray;
 		_item_weight = (_infos call INV_GetItemTypeKg);
 		_weight = _weight + (_count) * (_item_weight);
-		
-		_i = _i + 1;
-	} forEach (_object getVariable _Arrayname);
+	} forEach (_object getVariable [_Arrayname, []]);
 	
 	_weight
 };
@@ -277,8 +331,14 @@ INV_GetStorageWeight = {
 
 // Get Current Weight
 INV_GetOwnWeight = {
-	private["_player", "_inventory_name"];
-	_player = player;
+	([player] call INV_PlayerWeight)	
+};
+
+INV_PlayerWeight = {
+	private["_player"];
+	_player = _this select 0;
+	
+	private["_inventory_name"];
 	_inventory_name = [_player] call object_storage_name;
 	([_player, _inventory_name] call INV_GetStorageWeight)	
 };
@@ -314,30 +374,36 @@ INV_RemoveIllegalStorage = {
 	};
 
 	[_object, _arrayname, "drug"] call INV_StorageRemoveKindOf;
-	(format ["if (player == %2) then {player groupChat ""%1 had drugs in its trunk, you removed them. You should jail the owner of %1 for %4 minutes or give him a ticket of $%5.""}; titletext [format[localize ""STRS_civmenucheck_haddrugs"", %1, %3], ""plain""];", _vcl, player, _drugs_value, ceil(_drugs_value/20000), ceil(_drugs_value/2)]) call broadcast;
+	(format ["if (player == %2) then {player groupChat ""%1 had drugs in its trunk, you removed them. You should jail the owner of %1 for %4 minutes or give him a ticket of $%5.""}; server globalChat format[localize ""STRS_civmenucheck_haddrugs"", %1, %3];", _vcl, player, _drugs_value, ceil(_drugs_value/20000), ceil(_drugs_value/2)]) call broadcast;
 	true
 };
 
 // Remove Illegal Items
 INV_RemoveIllegal = {
-	private["_object"];
+	private["_object", "_inv"];
 	_object = _this select 0;
-
-	private["_illegalinfos", "_illwArray", "_illmags", "_has_nv", "_has_bin"];
-	_has_nv = if (_object hasWeapon "NVGoggles") then { true } else { false};	
-	_has_bin = if (_object hasWeapon "Binocular") then { true } else { false};
 	
-	[_object] call player_reset_gear;
+	_inv = [_object] call player_get_inventory;
 
-	if (_has_nv) then {
-		_object addWeapon "NVGoggles";
-	};
+	{
+		private["_item_entry", "_item", "_infos", "_isItem"];
+		_item_entry = _x;
+		_item = _item_entry select 0;
+		_infos = _item call INV_GetItemArray;
+		_isItem = ((_infos call INV_GetItemType) == "Item");
+		if (_isItem) then { if (_item call INV_GetItemIsIllegal) then {
+			[_object, _item, 0] call INV_SetItemAmount;
+		};};
+	} foreach _inv;	 
 	
-	if (_has_bin) then {
-		_object addWeapon "Binocular";
-	};
-
-   [_object] call player_reset_side_inventory;
+	{
+		if (!(_x == "Laserdesignator" || _x =="Binocular_Vector" || _x =="NVGoggles"  || _x =="Binocular" || _x =="itemmap" || _x =="itemgps" ||
+			_x =="itemradio" || _x =="ItemCompass" || _x =="ItemWatch") ) then {
+			_object removeweapon _x;
+		};
+	} foreach weapons _object;
+	
+	{ _object removemagazines _x;} foreach magazines _object;	
 };
 
 
@@ -379,7 +445,7 @@ INV_GetObjectTax = {
 
 // Fuction Add Percent (Taxes)
 INV_AddPercent = {
-	private ["_worth", "_percent", "_result"];
+	private ["_worth", "_percent", "_round", "_result"];
 	_worth    = _this select 0;
 	_percent = _this select 1;
 	_round  = true;
@@ -430,14 +496,14 @@ INV_GetVehicleType = {
 };
 
 // Check if Player is Armed
-INV_IsArmed = {if (count (weapons player - nonlethalweapons) > 0) then {true}else{false}};
+INV_IsArmed = {if (count ((weapons player) - nonlethalweapons) > 0) then {true}else{false}};
 
 // Check if unit is Armed
 INV_UnitArmed = {if (count (weapons _this - nonlethalweapons) > 0) then {true}else{false}};
 
 //Function Item Taxes
 INV_GetItemTax = {
-	private ["_type", "_item", "_result"];
+	private ["_type", "_item", "_result", "_cost"];
 	_type = _this call INV_GetItemType;
 	_cost = _this call INV_GetItemBuyCost;
 	[_cost, (_type call INV_GetObjectTax)] call INV_AddPercent;
@@ -498,7 +564,7 @@ INV_GetScriptFromClass_Weap = {
 
 // Get item Array
 INV_GetItemArray = {
-	private ["_c", "_Fobjarray"];
+	private ["_c", "_Fobjarray", "_Nname"];
 	_Fobjarray = [];
 	if ((typeName _this) == "STRING") then {
 			_Nname = format["A_MS_%1", _this];
