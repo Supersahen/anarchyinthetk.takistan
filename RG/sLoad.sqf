@@ -31,16 +31,23 @@ _loadFromDBClient =
 "
 	_array = _this;
 	_uid = _array select 0;
-	_uid_persist = format ['%1_persistent',getplayeruid player];
+	_uid_persist = format ['%1_persistent', getplayeruid player];
 	
-	if ((_uid != getplayeruid player) and (_uid != _uid_persist)) exitWith {};
+	if ((_uid != getplayeruid player) and (_uid != _uid_persist)) then {
+		diag_log format['Client Load Error: UID mismatch. Expected %1 or %2, got %3', getplayeruid player, _uid_persist, _uid];
+		exitWith {};
+	};
 	
 	_varName = _array select 1;
 	_varValue = _array select 2;
-	if(isNil '_varValue') exitWith {};
+	if(isNil '_varValue') exitWith {
+		diag_log format['Client Load Warning: Nil value for %1', _varName];
+	};
 	diag_log format['STAT INFO -> UID: %1 - VARNAME: %2 - VARVALUE: %3',_uid,_varName,_varValue];
 
-	if (isNil 'iscop' or isNil 'isopf' or isNil 'isins' or isNil 'isciv') exitWith {};
+	if (isNil 'iscop' or isNil 'isopf' or isNil 'isins' or isNil 'isciv') exitWith {
+		diag_log 'Client Load Error: Faction variables not defined';
+	};
 	
 	_handle_inventory = {
 		private['_value'];
@@ -57,7 +64,7 @@ _loadFromDBClient =
 					} else {
 						_x select 1
 					};
-					_formatted_inventory pushBack [_item, _amount];
+					_formatted_inventory set [count _formatted_inventory, [_item, _amount]];
 				};
 			} forEach _value;
 			[player, _formatted_inventory] call player_set_inventory;
@@ -83,8 +90,8 @@ _loadFromDBClient =
 				[player, _varValue] call bank_set_value;
 			};
 		};
-		if(_varName == 'WeaponsplayerWest') then {{player addWeapon _x} forEach _varValue;};
-		if(_varName == 'MagazinesplayerWest') then {{player addMagazine _x} forEach _varValue;};
+		if(_varName == 'WeaponsPlayerWest') then {{player addWeapon _x} forEach _varValue;};
+		if(_varName == 'MagazinesPlayerWest') then {{player addMagazine _x} forEach _varValue;};
 		if(_varName == 'LicensesWest') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryWest') then {_varValue call _handle_inventory;};
 		if(_varName == 'privateStorageWest') then {[_varValue, 'private_storage'] call _handle_storage;};
@@ -100,8 +107,8 @@ _loadFromDBClient =
 				[player, _varValue] call bank_set_value;
 			};
 		};
-		if(_varName == 'WeaponsplayerEast') then {{player addWeapon _x} forEach _varValue;};
-		if(_varName == 'MagazinesplayerEast') then {{player addMagazine _x} forEach _varValue;};
+		if(_varName == 'WeaponsPlayerEast') then {{player addWeapon _x} forEach _varValue;};
+		if(_varName == 'MagazinesPlayerEast') then {{player addMagazine _x} forEach _varValue;};
 		if(_varName == 'LicensesEast') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryEast') then {_varValue call _handle_inventory;};
 		if(_varName == 'privateStorageEast') then {[_varValue, 'private_storage'] call _handle_storage;};
@@ -117,8 +124,8 @@ _loadFromDBClient =
 				[player, _varValue] call bank_set_value;
 			};
 		};
-		if(_varName == 'WeaponsplayerRes') then {{player addWeapon _x} forEach _varValue;};
-		if(_varName == 'MagazinesplayerRes') then {{player addMagazine _x} forEach _varValue;};
+		if(_varName == 'WeaponsPlayerRes') then {{player addWeapon _x} forEach _varValue;};
+		if(_varName == 'MagazinesPlayerRes') then {{player addMagazine _x} forEach _varValue;};
 		if(_varName == 'LicensesRes') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryRes') then {_varValue call _handle_inventory;};
 		if(_varName == 'privateStorageRes') then {[_varValue, 'private_storage'] call _handle_storage;};
@@ -136,8 +143,8 @@ _loadFromDBClient =
 				[player, _varValue] call bank_set_value;
 			};
 		};
-		if(_varName == 'WeaponsplayerCiv') then {{player addWeapon _x} forEach _varValue;};
-		if(_varName == 'MagazinesplayerCiv') then {{player addMagazine _x} forEach _varValue;};
+		if(_varName == 'WeaponsPlayerCiv') then {{player addWeapon _x} forEach _varValue;};
+		if(_varName == 'MagazinesPlayerCiv') then {{player addMagazine _x} forEach _varValue;};
 		if(_varName == 'LicensesCiv') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryCiv') then {_varValue call _handle_inventory;};
 		if(_varName == 'privateStorageCiv') then {[_varValue, 'private_storage'] call _handle_storage;};
