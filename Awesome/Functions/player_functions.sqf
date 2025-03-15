@@ -3418,3 +3418,8 @@ kick_player = {
 };
 
 player_functions_defined = true;
+
+// Initialize key handler for escape key
+waitUntil {!isNull player};
+(findDisplay 46) displayAddEventHandler ["KeyDown", "_this execVM 'keyhandler.sqf'"];
+diag_log "Key handler initialized for escape key";
