@@ -7,8 +7,21 @@
 
 ALL_LOADING_DONE = false;
 enableSaving [false, false];
+taki_init_finished = false;
 
 isClient = !isServer || (isServer && !isDedicated);
+
+if(isServer) then
+{
+	
+	call compile preProcessFile "\iniDB\init.sqf";
+	diag_log "iniDB\init.sqf COMPLETE";
+	titleText ["Database Initialising","PLAIN"]; // Displays text
+	execVM "RG\serverGather.sqf";
+};
+
+[] execvm "scripts\monitor_init.sqf";
+diag_log "scripts\monitor_init.sqf COMPLETE";
 
 ExecSQFwait("Awesome\BIS\init.sqf")
 
@@ -25,6 +38,9 @@ ExecSQF("Awesome\MyStats\functions.sqf");
 ExecSQF("Awesome\Functions\server_functions.sqf");
 ExecSQF("Awesome\Functions\list_functions.sqf");
 ExecSQF("Awesome\Functions\vehicle_storage_functions.sqf");
+
+RG_fnc_iSave = compile preprocessFileLineNumbers "RG\iSave.sqf";
+diag_log "RG\iSave.sqf COMPLETE";
 
 if (isClient) then {
 		[] call stats_client_start_loading;
@@ -130,3 +146,4 @@ if (isServer) then {
 	ExecSQFspawn("Awesome\Scripts\hunting.sqf");
 	ExecSQFspawn("stationrobloop.sqf");
 };
+taki_init_finished = true;

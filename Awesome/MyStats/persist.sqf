@@ -1,5 +1,5 @@
 invoke_java_method = {
-	if (isNil "_this") exitWith{""};
+	/*if (isNil "_this") exitWith{""};
 	if (typeName _this != "ARRAY") exitWith {""};
 	if (count _this == 0) exitWith {""};
 	
@@ -35,7 +35,7 @@ invoke_java_method = {
 	
 	//diag_log _invoke_str;
 	private["_result"];
-	_result = "jni" callExtension _invoke_str;
+	_result = "jni" callExtension _invoke_str;*/
 	
 	_result
 };

@@ -290,10 +290,10 @@ stats_server_save = {
 stats_client_save = {
 	private["_variable", "_value"];
 	
-	_variable = _this select 0;
-	_value = _this select 1;
-	
-	[player, _variable, _value] call stats_player_save;
+	//_variable = _this select 0;
+	//_value = _this select 1;
+	["all"] call RG_fnc_iSave;
+	//[player, _variable, _value] call stats_player_save;
 	true
 };
 
