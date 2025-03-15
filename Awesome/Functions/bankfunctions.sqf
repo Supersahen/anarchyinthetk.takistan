@@ -8,7 +8,7 @@ bank_get_value = {
 	private ["_value"];
 	_value = [_player, "bankaccount"] call player_get_array;
 	_value = ([_value] call decode_number);
-	//player groupChat format["bank_get_value: bankaccount = %1, _value = %2", bankaccount, _value];
+	diag_log format["bank_get_value: bankaccount = %1, _value = %2", bankaccount, _value];
 	_value
 };
 
@@ -24,6 +24,7 @@ bank_set_value = {
 	if (_value < 0) then {_value = 0};
 	_value = [_value] call encode_number;
 	[_player, "bankaccount", _value] call player_set_array;
+	diag_log format["bank_set_value: bankaccount = %1, _value = %2", bankaccount, _value];
 };
 
 
