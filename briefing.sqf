@@ -11,7 +11,7 @@ player createDiarySubject ["hunting","TLR Hunting"];
 player createDiarySubject ["clothes","TLR Clothing"];
 player createDiarySubject ["paint","TLR Painting"];
 player createDiarySubject ["donations","Donations"];
-player createDiarySubject ["credits","TS3, Website and Credits"];
+player createDiarySubject ["credits","Discord, Website and Credits"];
 player createDiarySubject ["origins","History of Life RP Maps"];
 player createDiarySubject ["help","Help and Tips"];
 
@@ -99,10 +99,8 @@ player createDiaryRecord ["credits",
 [
 "",
 "
-Teamspeak 3 Information:<br/>
+Discord Information:<br/>
 Address: https://discord.gg/dVWvxEZJBj<br/>
-Port: (Default)
-Passwork: (No Password)
 <br/>
 Official Website: https://discord.gg/dVWvxEZJBj<br/>
 Join the forums, make suggestions and voice complaints!<br/>
