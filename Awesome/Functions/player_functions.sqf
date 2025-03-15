@@ -3359,5 +3359,72 @@ player_resrain_disconnect = {
 //	[] call player_save_side_gear_setup;
 //	[] call player_init_arrays;
 
+debug = {
+	_var = _this select 0;
+	_string = _this select 1;
+	
+	if (isNil "_var") exitWith {};
+	if (isNil "_string") then {
+		systemChat format ["TYPE: %1 : VALUE: %2",typeName _var,_var];
+	} else {
+		systemChat format ["NAME: %1 TYPE: %2 : VALUE: %3",_string,typeName _var,_var];
+	};
+};
+
+mp_log = {
+
+	_string = _this select 0;
+	_tag = _this select 1;
+	_hour = date select 3;
+	_minute = date select 4;
+	_random = round random 999;
+	_uid = getplayeruid player;
+	_faction = nil;
+	if ([player] call player_opfor) then {_faction = "Opfor"};
+		if ([player] call player_civilian) then {_faction = "Civilian"};
+		if ([player] call player_cop) then {_faction = "Cop"};
+		if ([player] call player_insurgent) then {_faction = "Insurgent"};
+
+	_stamp = format ["(%4) TIME: %1:%2:%3 (%5) (%6) |  ",_hour,_minute,_random,_tag,_faction,_uid];
+	["TakistanLifeLog", "TakistanLifeLog", _stamp ,_string] call fn_SaveToServer;
+
+};
+
+server_message = {
+	_message = _this select 0;
+	[[], "mp_server_message", [_message]] call mp_aware_me;
+};
+
+gate_control = {
+	if (vehicle player == player) exitWith { false };
+	if !(iscop or isopf) exitWith { false };
+	_gate = (nearestobjects [getpos player, ["ZavoraAnim"],  20] select 0);
+	
+	if (isNil "_gate") exitWith { false };
+
+	_cars = nearestObjects [_gate, ["Car"], 4];
+	if (count _cars > 0) exitWith {player groupChat  "Your or another players vehicle is too close to the bargate to operate it safely. Please move 4 meters away from the gate"};
+
+	if (_gate animationPhase "bargate" == 0) then {
+		_gate animate ["bargate",1];
+	} else {
+		_gate animate ["bargate",0]; 
+	};
+	true
+};
+
+kick_player = {
+	private ["_player","_message"];
+	_player = _this select 0;
+	_message = _this select 1;
+	
+	if (isNil "_player" or isNil "_message") exitWith {};
+	if (_player == player) then {
+		
+		player groupChat format ["%1",_message];
+		uiSleep 5;
+		failMission "END1";
+	};
+};
 
 player_functions_defined = true;
