@@ -14,7 +14,7 @@ _saveToDB =
 		diag_log format['iniDB Error: Missing required parameters: file=%1, uid=%2, varName=%3, value=%4', _file, _uid, _varName, _varValue];
 	};
 	
-	_saveArray = [_uid, _uid, _varName, _varValue];
+	_saveArray = [_file, _uid, _varName, _varValue];
 	_saveArray call iniDB_write;
 ";
 
@@ -40,17 +40,30 @@ _loadFromDB =
 		nil
 	};
 	
-	_loadArray = [_uid, _uid, _varName, _type];
+	_loadArray = [_file, _uid, _varName, _type];
 	_result = _loadArray call iniDB_read;
 	
 	if (isNil '_result') then {
 		diag_log format['iniDB Warning: No data found for %1.%2.%3', _uid, _varName, _type];
 		_result = switch (_type) do {
-			case 'NUMBER': {0};
+			case 'NUMBER': {
+				if (_varName in ['moneyAccountWest', 'moneyAccountEast', 'moneyAccountRes', 'moneyAccountCiv']) then {
+					diag_log format['iniDB: Using default money value for %1', _varName];
+					startmoneh
+				} else {
+					0
+				};
+			};
 			case 'ARRAY': {[]};
 			case 'STRING': {''};
 			default {nil}
 		};
+	};
+	
+	// Ensure money values are properly formatted
+	if (_type == 'NUMBER' && _varName in ['moneyAccountWest', 'moneyAccountEast', 'moneyAccountRes', 'moneyAccountCiv']) then {
+		_result = parseNumber str _result;
+		diag_log format['iniDB: Sending money value %1 for %2', _result, _varName];
 	};
 	
 	accountToClient = [_uid, _varName, _result];

@@ -126,43 +126,42 @@
 			diag_log format["Client Load Error: Missing required data: uid=%1, varName=%2, value=%3", _uid, _varName, _varValue];
 		};
 		
-		if (_uid != getPlayerUID player) exitWith {
-			diag_log format["Client Load Error: UID mismatch. Expected %1, got %2", getPlayerUID player, _uid];
+		// Check if this is a persistent variable
+		_isPersistent = _varName in ["JailTime", "logins"];
+		_expectedUID = if (_isPersistent) then {
+			format["%1_persistent", getPlayerUID player]
+		} else {
+			getPlayerUID player
+		};
+		
+		if (_uid != _expectedUID) exitWith {
+			diag_log format["Client Load Error: UID mismatch for %1. Expected %2, got %3", _varName, _expectedUID, _uid];
 		};
 		
 		diag_log format["Client Load: Setting %1 to %2 for player %3", _varName, _varValue, name player];
 		
 		switch (_varName) do {
-			case "moneyAccountWest": {
-				if (isNil "_varValue" || _varValue < 0) then {
-					_varValue = startmoneh;
-					diag_log format["Client Load: Using default money %1 for West", _varValue];
-				};
-				[player, _varValue] call bank_set_value;
-			};
-			case "moneyAccountEast": {
-				if (isNil "_varValue" || _varValue < 0) then {
-					_varValue = startmoneh;
-					diag_log format["Client Load: Using default money %1 for East", _varValue];
-				};
-				[player, _varValue] call bank_set_value;
-			};
-			case "moneyAccountRes": {
-				if (isNil "_varValue" || _varValue < 0) then {
-					_varValue = startmoneh;
-					diag_log format["Client Load: Using default money %1 for Resistance", _varValue];
-				};
-				[player, _varValue] call bank_set_value;
-			};
+			case "moneyAccountWest";
+			case "moneyAccountEast";
+			case "moneyAccountRes";
 			case "moneyAccountCiv": {
-				if (isNil "_varValue" || _varValue < 0) then {
+				if (isNil "_varValue" || _varValue == 0) then {
 					_varValue = startmoneh;
-					diag_log format["Client Load: Using default money %1 for Civilian", _varValue];
+					diag_log format["Client Load: Using default money %1 for %2", _varValue, _varName];
 				};
-				[player, _varValue] call bank_set_value;
+				diag_log format["Client Load: Setting money value to %1", _varValue];
+				[player, parseNumber str _varValue] call bank_set_value;
 			};
 			default {
-				diag_log format["Client Load Warning: Unhandled variable %1", _varName];
+				// Handle other variables like inventory, weapons, etc.
+				if (_varName in ["WeaponsPlayerCiv", "MagazinesPlayerCiv", "LicensesCiv", "InventoryCiv", 
+								"privateStorageCiv", "FactoryCiv", "Fabrikablage1_storage", 
+								"AircraftFactory1_storage", "Fabrikablage3_storage", "Fabrikablage4_storage"]) then {
+					// These are expected array variables, no need to warn
+					diag_log format["Client Load: Setting %1 array data", _varName];
+				} else {
+					diag_log format["Client Load Warning: Unhandled variable %1", _varName];
+				};
 			};
 		};
 	};
