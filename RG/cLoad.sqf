@@ -1,3 +1,48 @@
+/*
+ * cLoad.sqf - Client Load Script
+ * 
+ * This script handles loading and initializing player data on the client side.
+ * It works in conjunction with sLoad.sqf (server load) and SaveVar.sqf.
+ * 
+ * Loading Process:
+ * 1. Initializes basic variables (playtime)
+ * 2. Loads persistent variables first (logins, playtime, online_during_hacker)
+ * 3. Updates and saves current session playtime
+ * 4. Loads faction-specific data based on player type (cop, opf, ins, civ):
+ *    - Money account
+ *    - Weapons and magazines
+ *    - Licenses
+ *    - Inventory
+ *    - Private storage
+ *    - Factory ownership
+ *    - Jail time (if applicable)
+ * 5. Handles special storage for civilians (factory storage)
+ * 6. Updates login count and saves it
+ * 
+ * Key Features:
+ * - Validates loaded data before applying
+ * - Initializes empty/default values if data is missing
+ * - Maintains faction-specific variable separation
+ * - Comprehensive error logging
+ * - Proper type checking for all variables
+ * 
+ * Variables Handled:
+ * - player_total_playtime: Total time played
+ * - player_logins: Number of times logged in
+ * - INV_LicenseOwner: Player's licenses
+ * - private_storage: Player's private storage
+ * - INV_Fabrikowner: Factory ownership
+ * - player_jailtime: Time remaining in jail
+ * - online_during_hacker: Hacker presence flag
+ * 
+ * Dependencies:
+ * - bank_functions_defined
+ * - ftf_getPlayTime
+ * - player_set_inventory
+ * - player_set_array
+ * - fn_SaveToServer
+ */
+
 [] spawn {
 	private["_uid", "_id", "_playtime"];
 	_uid = getPlayerUID player;
@@ -5,9 +50,7 @@
 	_cid = player;
 	
 	// Initialize variables with default values
-	if (isNil "player_logins") then {player_logins = 0};
 	if (isNil "player_total_playtime") then {player_total_playtime = 0};
-	if (isNil "police_agreement") then {police_agreement = false};
 	
 	// Initialize sendToServer function if not defined
 	if (isNil "sendToServer") then {
@@ -29,71 +72,102 @@
 		stats_loaded = false;
 	};
 	_playTime = ([player] call ftf_getPlayTime) / 60;
-	
-	if(iscop) then
+
+	// Request global persistent variables first
 	{
-		[_uid, _uid, "moneyAccountWest", "NUMBER", _cid] call sendToServer;
-		[_uid, _uid, "WeaponsPlayerWest", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "MagazinesPlayerWest", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "LicensesWest", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "InventoryWest", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "privateStorageWest", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "FactoryWest", "ARRAY", _cid] call sendToServer;
+		[format ["%1_persistent",_uid], format ["%1_persistent",_uid], _x, "NUMBER", _cid] call sendToServer;
+	} forEach ["logins", "player_total_playtime", "online_during_hacker"];
+	
+	// Wait for playtime to be loaded
+	waitUntil {!isNil "player_total_playtime"};
+	
+	// Update and save playtime
+	player_total_playtime = player_total_playtime + _playTime;
+	[format ["%1_persistent",getplayeruid player], format ["%1_persistent",getplayeruid player], "player_total_playtime", player_total_playtime] call fn_SaveToServer;
+	diag_log format["Updated total playtime for %1 to %2", name player, player_total_playtime];
+
+	_request_common_vars = {
+		private["_faction", "_uid", "_cid"];
+		_faction = _this select 0;
+		_uid = _this select 1;
+		_cid = _this select 2;
+
+		// Request money account
+		[_uid, _uid, format["moneyAccount%1", _faction], "NUMBER", _cid] call sendToServer;
+		
+		// Request weapons
+		[_uid, _uid, format["WeaponsPlayer%1", _faction], "ARRAY", _cid] call sendToServer;
+		
+		// Request magazines
+		[_uid, _uid, format["MagazinesPlayer%1", _faction], "ARRAY", _cid] call sendToServer;
+		
+		// Request licenses
+		[_uid, _uid, format["Licenses%1", _faction], "ARRAY", _cid] call sendToServer;
+		
+		// Request inventory
+		[_uid, _uid, format["Inventory%1", _faction], "ARRAY", _cid] call sendToServer;
+		
+		// Request private storage
+		[_uid, _uid, format["privateStorage%1", _faction], "ARRAY", _cid] call sendToServer;
+		
+		// Request factory ownership
+		[_uid, _uid, format["Factory%1", _faction], "ARRAY", _cid] call sendToServer;
+		
+		// Request jail time (persistent)
 		[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "JailTime", "NUMBER", _cid] call sendToServer;
 	};
 
-	if(isopf) then
-	{
-		[_uid, _uid, "moneyAccountEast", "NUMBER", _cid] call sendToServer;
-		[_uid, _uid, "WeaponsPlayerEast", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "MagazinesPlayerEast", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "LicensesEast", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "InventoryEast", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "privateStorageEast", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "FactoryEast", "ARRAY", _cid] call sendToServer;
-		[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "JailTime", "NUMBER", _cid] call sendToServer;
-	};
-	if(isins) then
-	{
-		[_uid, _uid, "moneyAccountRes", "NUMBER", _cid] call sendToServer;
-		[_uid, _uid, "WeaponsPlayerRes", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "MagazinesPlayerRes", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "LicensesRes", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "InventoryRes", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "privateStorageRes", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "FactoryRes", "ARRAY", _cid] call sendToServer;
-		[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "JailTime", "NUMBER", _cid] call sendToServer;
+	_request_special_vars = {
+		private["_faction", "_uid", "_cid"];
+		_faction = _this select 0;
+		_uid = _this select 1;
+		_cid = _this select 2;
+
+		// Handle civilian-specific storage
+		if (_faction == "Civ") then {
+			{
+				[_uid, _uid, _x, "ARRAY", _cid] call sendToServer;
+			} forEach [
+				"Fabrikablage1_storage",
+				"AircraftFactory1_storage",
+				"Fabrikablage3_storage",
+				"Fabrikablage4_storage"
+			];
+		};
 	};
 	
-	if(isciv) then
-	{
-		[_uid, _uid, "moneyAccountCiv", "NUMBER", _cid] call sendToServer;
-		[_uid, _uid, "WeaponsPlayerCiv", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "MagazinesPlayerCiv", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "LicensesCiv", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "InventoryCiv", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "privateStorageCiv", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "Fabrikablage1_storage", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "AircraftFactory1_storage", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "Fabrikablage3_storage", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "Fabrikablage4_storage", "ARRAY", _cid] call sendToServer;
-		[_uid, _uid, "FactoryCiv", "ARRAY", _cid] call sendToServer;
-		[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "JailTime", "NUMBER", _cid] call sendToServer;
+	// Request faction-specific variables
+	if(iscop) then {
+		["West", _uid, _cid] call _request_common_vars;
+		["West", _uid, _cid] call _request_special_vars;
 	};
 	
-	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "logins", "NUMBER", _cid] call sendToServer;
-	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], _playTime, "NUMBER", _cid] call sendToServer;
-	//END
+	if(isopf) then {
+		["East", _uid, _cid] call _request_common_vars;
+		["East", _uid, _cid] call _request_special_vars;
+	};
+	
+	if(isins) then {
+		["Res", _uid, _cid] call _request_common_vars;
+		["Res", _uid, _cid] call _request_special_vars;
+	};
+	
+	if(isciv) then {
+		["Civ", _uid, _cid] call _request_common_vars;
+		["Civ", _uid, _cid] call _request_special_vars;
+	};
+	
+	diag_log format ["cLoad.sqf: Loading stats for %1 (%2)", name player, _uid];
 	
 	private["_bank_amount"];
 	_bank_amount = [_cid] call bank_get_value;
 	if (_bank_amount == 0 ) then {
-			diag_log format ["cLoad.sqf"];
-			diag_log "Setting Money to default as no stat loaded";
-			diag_log format ["Initial Money: %1", _bank_amount];
-			[player, startmoneh] call bank_set_value;
-			_bank_amount = [player] call bank_get_value;
-			diag_log format ["Updated Money: %1", _bank_amount];
+		diag_log format ["cLoad.sqf"];
+		diag_log "Setting Money to default as no stat loaded";
+		diag_log format ["Initial Money: %1", _bank_amount];
+		[player, startmoneh] call bank_set_value;
+		_bank_amount = [player] call bank_get_value;
+		diag_log format ["Updated Money: %1", _bank_amount];
 	} else {
 		diag_log "Money loaded succesfully";
 		diag_log format ["Money: %1", _bank_amount]
@@ -105,10 +179,24 @@
 	// Wait for all stats to be properly loaded
 	waitUntil {!isNil "player_logins" && !isNil "player_total_playtime"};
 	
+	// Request persistent logins first
+	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "logins", "NUMBER", _cid] call sendToServer;
+	
+	// Wait a bit for the login count to be received
+	uiSleep 1;
+	
+	// Initialize login count if it wasn't loaded
+	if (isNil "player_logins") then {
+		player_logins = 0;
+		diag_log "No previous login count found, starting from 0";
+	};
+	
+	// Increment and save the login count
 	player_logins = player_logins + 1;
 	[format ["%1_persistent",getplayeruid player], format ["%1_persistent",getplayeruid player], "logins", player_logins] call fn_SaveToServer;
 	_message = format ["%1 logged into the server. They have logged in %2 times",name player,player_logins];
 	[_message,"Login"] call mp_log;
+	diag_log format["Updated login count for %1 to %2", name player, player_logins];
 	
 	if (isNil "accountToClient") then { accountToClient = []; };
 
@@ -127,7 +215,7 @@
 		};
 		
 		// Check if this is a persistent variable
-		_isPersistent = _varName in ["JailTime", "logins"];
+		_isPersistent = _varName in ["JailTime", "logins", "player_total_playtime", "online_during_hacker"];
 		_expectedUID = if (_isPersistent) then {
 			format["%1_persistent", getPlayerUID player]
 		} else {
@@ -139,30 +227,124 @@
 		};
 		
 		diag_log format["Client Load: Setting %1 to %2 for player %3", _varName, _varValue, name player];
-		
-		switch (_varName) do {
-			case "moneyAccountWest";
-			case "moneyAccountEast";
-			case "moneyAccountRes";
-			case "moneyAccountCiv": {
-				if (isNil "_varValue" || _varValue == 0) then {
-					_varValue = startmoneh;
-					diag_log format["Client Load: Using default money %1 for %2", _varValue, _varName];
+
+		// Determine player's faction suffix
+		_playerFaction = switch (true) do {
+			case (iscop): {"West"};
+			case (isopf): {"East"};
+			case (isins): {"Res"};
+			case (isciv): {"Civ"};
+			default {""};
+		};
+
+		// Check if this variable belongs to the player's faction
+		_isFactionVar = false;
+		if (_playerFaction != "") then {
+			_isFactionVar = (_varName find _playerFaction) != -1;
+		};
+
+		// Only process faction-specific variables if they match the player's faction
+		if (_isPersistent || _isFactionVar) then {
+			switch (true) do {
+				// Handle money accounts
+				case (_varName == format["moneyAccount%1", _playerFaction]): {
+					if (isNil "_varValue" || _varValue == 0) then {
+						_varValue = startmoneh;
+						diag_log format["Client Load: Using default money %1 for %2", _varValue, _varName];
+					};
+					diag_log format["Client Load: Setting money value to %1", _varValue];
+					[player, parseNumber str _varValue] call bank_set_value;
 				};
-				diag_log format["Client Load: Setting money value to %1", _varValue];
-				[player, parseNumber str _varValue] call bank_set_value;
-			};
-			default {
-				// Handle other variables like inventory, weapons, etc.
-				if (_varName in ["WeaponsPlayerCiv", "MagazinesPlayerCiv", "LicensesCiv", "InventoryCiv", 
-								"privateStorageCiv", "FactoryCiv", "Fabrikablage1_storage", 
-								"AircraftFactory1_storage", "Fabrikablage3_storage", "Fabrikablage4_storage"]) then {
-					// These are expected array variables, no need to warn
-					diag_log format["Client Load: Setting %1 array data", _varName];
-				} else {
+				
+				// Handle weapons
+				case (_varName == format["WeaponsPlayer%1", _playerFaction]): {
+					removeAllWeapons player;
+					{
+						player addWeapon _x;
+					} forEach _varValue;
+					diag_log format["Client Load: Added weapons for %1: %2", name player, _varValue];
+				};
+				
+				// Handle magazines
+				case (_varName == format["MagazinesPlayer%1", _playerFaction]): {
+					{
+						player addMagazine _x;
+					} forEach _varValue;
+					diag_log format["Client Load: Added magazines for %1: %2", name player, _varValue];
+				};
+				
+				// Handle licenses
+				case (_varName == format["Licenses%1", _playerFaction]): {
+					INV_LicenseOwner = _varValue;
+					diag_log format["Client Load: Set licenses for %1: %2", name player, _varValue];
+				};
+				
+				// Handle inventory
+				case (_varName == format["Inventory%1", _playerFaction]): {
+					if (typeName _varValue == "ARRAY") then {
+						[player, _varValue] call player_set_inventory;
+						diag_log format["Client Load: Set inventory for %1: %2", name player, _varValue];
+					};
+				};
+				
+				// Handle private storage
+				case (_varName == format["privateStorage%1", _playerFaction]): {
+					if (typeName _varValue == "ARRAY") then {
+						player setVariable ["private_storage", _varValue, true];
+						diag_log format["Client Load: Set private storage for %1: %2", name player, _varValue];
+					} else {
+						player setVariable ["private_storage", [], true];
+						diag_log format["Client Load: Initialized empty private storage for %1", name player];
+					};
+				};
+				
+				// Handle factory ownership
+				case (_varName == format["Factory%1", _playerFaction]): {
+					INV_Fabrikowner = _varValue;
+					diag_log format["Client Load: Set factory ownership for %1: %2", name player, _varValue];
+				};
+
+				// Handle civilian-specific storage
+				case (isciv && (_varName in ["Fabrikablage1_storage", "AircraftFactory1_storage", "Fabrikablage3_storage", "Fabrikablage4_storage"])): {
+					if (typeName _varValue == "ARRAY") then {
+						player setVariable [_varName, _varValue, true];
+						diag_log format["Client Load: Set storage %1 for %2: %3", _varName, name player, _varValue];
+					} else {
+						player setVariable [_varName, [], true];
+						diag_log format["Client Load: Initialized empty storage %1 for %2", _varName, name player];
+					};
+				};
+				
+				// Handle jail time
+				case (_varName == "JailTime"): {
+					player_jailtime = _varValue;
+					diag_log format["Client Load: Set jail time for %1: %2", name player, _varValue];
+				};
+				
+				// Handle logins
+				case (_varName == "logins"): {
+					player_logins = _varValue;
+					diag_log format["Client Load: Set logins for %1: %2", name player, _varValue];
+				};
+				
+				// Handle play time
+				case (_varName == "player_total_playtime"): {
+					player_total_playtime = _varValue;
+					diag_log format["Client Load: Set total play time for %1: %2", name player, _varValue];
+				};
+				
+				// Handle online during hacker
+				case (_varName == "online_during_hacker"): {
+					online_during_hacker = _varValue;
+					diag_log format["Client Load: Set online during hacker for %1: %2", name player, _varValue];
+				};
+				
+				default {
 					diag_log format["Client Load Warning: Unhandled variable %1", _varName];
 				};
 			};
+		} else {
+			diag_log format["Client Load Warning: Ignoring variable %1 - does not match player faction %2", _varName, _playerFaction];
 		};
 	};
 };
