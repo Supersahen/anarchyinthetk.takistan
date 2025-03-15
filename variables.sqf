@@ -1,8 +1,8 @@
 //============================================================================================================================================
 seizemoneyreturn		 = 0.25; 							//Amount of money the cop gets by seizing illegal items (in percent of sell price)
 INV_smscost              = 25;
-add_civmoney             = 1250;
-add_copmoney             = 2500;
+add_civmoney             = 5000;
+add_copmoney             = 5000;
 add_workplace            = 1250;
 CopWaffenAvailable       = 0;
 CopInPrisonTime          = 180;

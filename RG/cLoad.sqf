@@ -102,6 +102,13 @@
 	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "player_total_playtime", "NUMBER", _cid] call sendToServer;
 	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "online_during_hacker", "NUMBER", _cid] call sendToServer;
 	//END
+	private["_bank_amount"];
+	_bank_amount = [_cid] call bank_get_value;
+	if (_bank_amount == 0 ) then {
+			diag_log "Setting Money to default as no stat loaded";
+			[player, 100000] call bank_set_value;
+	};
+	
 	statsLoaded = 1;
 	stats_loaded = true;
 
