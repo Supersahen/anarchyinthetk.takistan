@@ -1,10 +1,9 @@
 hint "Please read the TLR tabs on map before playing";
-server globalchat "[MoTD] Welcome to Takistan Life: Revolution!";
+server globalchat "[MoTD] Welcome to RISE Gaming Takistan Life: Revolution!";
 custom_motd = nil;
 while {true} do {	
 	{server globalChat format["[MoTD] %1", _x]} forEach [
-			"http://www.takistanliferevolution.com",
-			"TS3: tlr.ts.nfoservers.com",
+			"Discord: https://discord.gg/dVWvxEZJBj",
 			"All Blufor, Opfor, and Independent factions are required to be on TS3"
 		];
 	

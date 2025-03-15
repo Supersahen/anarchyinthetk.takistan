@@ -2908,7 +2908,7 @@ player_intro_text = {_this spawn {
 	private["_intro_messages"];
 	
 	_intro_messages = [
-		"Welcome to Takistan Life: Revolution, an RPG mission. \n\n Feel free to copy or edit our mission file. \n\n This is an international server, everyone is welcome.",
+		"Welcome to RISE Gaming Takistan Life: Revolution, an RPG mission. \n\n Feel free to copy or edit our mission file. \n\n This is an international server, everyone is welcome.",
 		"Civil war has broken out in Takistan! \n\n Opfor, Blufor, and Indfor can kill each other on sight.",
 		"Do not kill unarmed civilians! \n\n Ne les tuez pas des civils desarmes! \n\n No mate a civiles desarmados!",
 		"Do not teamkill! \n\n Ne tuez pas votre propre equipe! \n\n No mate a su propio equipo!",

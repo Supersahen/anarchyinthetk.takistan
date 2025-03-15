@@ -100,11 +100,11 @@ player createDiaryRecord ["credits",
 "",
 "
 Teamspeak 3 Information:<br/>
-Address: tlr.ts.nfoservers.com<br/>
+Address: https://discord.gg/dVWvxEZJBj<br/>
 Port: (Default)
 Passwork: (No Password)
 <br/>
-Official Website: http://www.takistanliferevolution.com<br/>
+Official Website: https://discord.gg/dVWvxEZJBj<br/>
 Join the forums, make suggestions and voice complaints!<br/>
 <br/>
 <br/>
@@ -138,8 +138,8 @@ Please report bugs to admins!<br/>
 <br/>
 If you require help please visit the forums or join teamspeak 3.
 <br/>
-Website: http://www.takistanliferevolution.com<br/>
-Teamspeak 3: tlr.ts.nfoservers.com<br/>
+Website: https://discord.gg/dVWvxEZJBj<br/>
+Teamspeak 3: https://discord.gg/dVWvxEZJBj<br/>
 <br/>
 We look forward to hearing from you!<br/>
 <br/>
@@ -438,7 +438,7 @@ Arrests should only be given for legitimate reasons. Here is also a small guide:
 	-Mass murder: 20minutes<br/>
 Aviod firing on unknown aircraft, unless you know for 100% that it is hostile.<br/>
 <br/>
-All Blufor Must join Teamspeak 3 at tlr.ts.nfoservers.com<br/>
+All Blufor Must join Teamspeak 3 at https://discord.gg/dVWvxEZJBj<br/>
 This will help with operations and communication. Join the Blufor Channels, and make sure your name is the same as ingame.<br/>
 <br/>
 LAWS<br/>
@@ -455,7 +455,7 @@ player createDiaryRecord ["indfor",
 [
 "Insurgent Guidelines",
 "
-All Independent Must join Teamspeak 3 at tlr.ts.nfoservers.com<br/>
+All Independent Must join Teamspeak 3 at https://discord.gg/dVWvxEZJBj<br/>
 You are a insurgent and a rebel to the Takistan Government. <br/>
 Do so by acting in this manner, destory anything that comes into your path.<br/>
 Rob, Murder, Destory.<br/>
@@ -468,7 +468,7 @@ player createDiaryRecord ["opfor",
 [
 "Opfor Guidelines",
 "
-All Opfor Must join Teamspeak 3 at tlr.ts.nfoservers.com<br/>
+All Opfor Must join Teamspeak 3 at https://discord.gg/dVWvxEZJBj<br/>
 You are a member of the Takistan Liberation Army. Your objective is to hold your territory from the democracy in the North.<br/>
 Your commanders have ordered you to liberate all foreign members from your land and try to restore dictatorship in Takistan.<br/>
 Do what ever you need to do to fulfill their commands, even if it means temporary maintaining a ceasefire with the Northen governments.<br/>
@@ -508,7 +508,7 @@ player createDiaryRecord ["donations",
 [
 "Donations",
 "
-Donate at http://www.takistanliferevolution.com for extra starting money! More donator rewards coming soon<br/>
+Donate at https://discord.gg/dVWvxEZJBj for extra starting money! More donator rewards coming soon<br/>
 <br/>
 "
 ]
