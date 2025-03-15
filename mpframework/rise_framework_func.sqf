@@ -26,14 +26,6 @@ mp_global_chat_message =
 	server globalchat _message;
 };
 
-mp_esu_message =
-{
-	if !(isesu) exitWith {};
-	_message = _this select 0;
-	server globalchat _message;
-	titleText [format["%1", _message], "PLAIN DOWN"];
-};
-
 mp_server_message =
 {
 	_message = _this select 0;

@@ -1,3 +1,27 @@
+
+reveal = {
+	private["_objs"];
+	_objs = nearestobjects[getpos player, ["man", "allvehicles"], 300];
+	{_x reveal _this;_x dotarget _this;} foreach _objs;
+};
+
+bash = {
+	private["_damage"];
+	_damage = damage player;
+	//[player, 10, 0] call setPitchBank;
+	uiSleep 0.01;
+//	[player, -5, 0] call setPitchBank;
+
+	"dynamicBlur" ppEffectEnable true;
+	"dynamicBlur" ppEffectAdjust [10];
+	"dynamicBlur" ppEffectCommit 0;
+	waitUntil {ppEffectCommitted "dynamicBlur"};
+	"dynamicBlur" ppEffectEnable true;
+	"dynamicBlur" ppEffectAdjust [0];
+	"dynamicBlur" ppEffectCommit (0.4 + _damage);
+	waitUntil {ppEffectCommitted "dynamicBlur"};
+};
+
 parse_number = {
 	private ["_number"];
 	_number = _this select 0;
@@ -9,7 +33,6 @@ parse_number = {
 	if (typeName _number != "SCALAR") exitWith {0};
 	_number
 };
-
 DialogCivilianPlayersList = {
 	private["_control_id"];
 	_control_id = _this select 0;
@@ -26,6 +49,12 @@ DialogNotCopsList = {
 	private["_control_id"];
 	_control_id = _this select 0;
 	([_control_id, true, false, true, true] call DialogPlayerList)
+};
+
+DialogNotCopsInsList = {
+	private["_control_id"];
+	_control_id = _this select 0;
+	([_control_id, true, false, false, true] call DialogPlayerList)
 };
 
 DialogPlayerList = {
@@ -436,3 +465,11 @@ findTurrets_Recurse = {
 };
 
 [] call buildings_protect;
+
+if(isClient) then {	
+	execVM "RG\SaveVar.sqf";
+	waitUntil {!isNil "fn_SaveToServer"};
+	execVM "RG\sLoad.sqf";
+	waitUntil {!isNil "statFunctionsLoaded"};
+	["client"] execVM "RG\pSave.sqf";
+};

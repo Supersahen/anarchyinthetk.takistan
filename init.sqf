@@ -20,10 +20,12 @@ if(isServer) then
 	execVM "RG\serverGather.sqf";
 };
 
-[] execvm "scripts\monitor_init.sqf";
-diag_log "scripts\monitor_init.sqf COMPLETE";
+// [] execvm "scripts\monitor_init.sqf";
+// diag_log "scripts\monitor_init.sqf COMPLETE";
 
 ExecSQFwait("Awesome\BIS\init.sqf")
+RG_fnc_iSave = compile preprocessFileLineNumbers "RG\iSave.sqf";
+diag_log "RG\iSave.sqf COMPLETE";
 
 ExecSQF("Awesome\Functions\debug.sqf");
 ExecSQF("Awesome\Functions\uid_lists.sqf");
@@ -38,9 +40,6 @@ ExecSQF("Awesome\MyStats\functions.sqf");
 ExecSQF("Awesome\Functions\server_functions.sqf");
 ExecSQF("Awesome\Functions\list_functions.sqf");
 ExecSQF("Awesome\Functions\vehicle_storage_functions.sqf");
-
-RG_fnc_iSave = compile preprocessFileLineNumbers "RG\iSave.sqf";
-diag_log "RG\iSave.sqf COMPLETE";
 
 if (isClient) then {
 		[] call stats_client_start_loading;
@@ -124,7 +123,9 @@ if(isClient) then {
 	
 	[1] call stats_client_update_loading_progress;
 	["Loading - Stage 5/5"] call stats_client_update_loading_title;
-	
+	[] execVM "RG\cLoad.sqf";
+	[] execvm "mpframework\rise_framework_init.sqf"; 
+	waitUntil {!isNil "rise_framework_initialized"};
 	[] call stats_client_stop_loading;
 	
 	[] call music_stop;
@@ -135,6 +136,7 @@ if(isClient) then {
 };
 
 ALL_LOADING_DONE = true;
+taki_init_finished = true;
 
 if (isServer) then {
 	[0,0,0,["serverloop"]] spawn compile preprocessfilelineNumbers "mayorserverloop.sqf";
@@ -146,4 +148,4 @@ if (isServer) then {
 	ExecSQFspawn("Awesome\Scripts\hunting.sqf");
 	ExecSQFspawn("stationrobloop.sqf");
 };
-taki_init_finished = true;
+

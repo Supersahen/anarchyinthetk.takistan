@@ -108,44 +108,12 @@
 	// Wait for all stats to be properly loaded
 	waitUntil {!isNil "player_logins" && !isNil "player_total_playtime"};
 	
-	uiSleep 4; 
-	titleText ["Stats Loaded","PLAIN"]; // Displays text
-
-	 /*if ((isdon) && !("donator" call INV_HasLicense)) then {INV_LicenseOwner = INV_LicenseOwner + ["donator"];
-				server globalchat "DONATOR ACCOUNT DETECTED: Donator License Added"};
-
-
-
-	if ((isvip) && !("viplicense" call INV_HasLicense)) then {INV_LicenseOwner = INV_LicenseOwner + ["viplicense"];
-				server globalchat "VIP DONATOR ACCOUNT DETECTED: VIP Donator License Added"};
-
-	if ((vice) && !("vice_training" call INV_HasLicense)) then {INV_LicenseOwner = INV_LicenseOwner + ["vice_training"];
-				server globalchat "VICE ACCOUNT DETECTED: VICE TRAINING Added"};*/
-	uiSleep 1;
-	
-	private["_bank_amount"];
-	_bank_amount = [_cid] call bank_get_value;
-	if (_bank_amount == 0 ) then {
-			diag_log "Setting Money to default as no stat loaded";
-			[player, startmoneh] call bank_set_value;
-	};
-	
-	if (!police_agreement and iscop) then {
-		[] spawn agreement_dialog;
-	};
-	if (iscop) then {
-		waitUntil {police_agreement};
-	};
-	
-	[] call open_spawn_menu;
-	
 	player_logins = player_logins + 1;
 	[format ["%1_persistent",getplayeruid player], format ["%1_persistent",getplayeruid player], "logins", player_logins] call fn_SaveToServer;
 	_message = format ["%1 logged into the server. They have logged in %2 times",name player,player_logins];
 	[_message,"Login"] call mp_log;
 	
 	
-	[str ("RISE GAMING") ,  str("Takistan Life: Revolution"), str("Welcome To Takistan")] spawn BIS_fnc_infoText;
 };
 
 

@@ -50,7 +50,7 @@ while {true} do
 			[format ["%1_persistent",getPlayerUID player],format ["%1_persistent",getPlayerUID player], "rank_un", player_rank] call fn_SaveToServer;
 		};
 		
-		if (isciv or isesu) then {
+		if (isciv) then {
 			[getPlayerUID player, getPlayerUID player, "moneyAccountCiv", ([player] call bank_get_value)] call fn_SaveToServer;
 			[getPlayerUID player, getPlayerUID player, "backpack_civ",[player] call player_get_backpack_gear] call fn_SaveToServer;
 			[getPlayerUID player, getPlayerUID player, "WeaponsPlayerCiv", weapons player] call fn_SaveToServer;

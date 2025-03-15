@@ -12,7 +12,7 @@ _loadFromDBClient =
 	if(isNil '_varValue') exitWith {};
 	diag_log format['STAT INFO -> UID: %1 - VARNAME: %2 - VARVALUE: %3',_uid,_varName,_varValue];
 
-	if (isNil 'iscop' or isNil 'isopf' or isNil 'isins' or isNil 'isciv' or isNil 'isesu') exitWith {};
+	if (isNil 'iscop' or isNil 'isopf' or isNil 'isins' or isNil 'isciv') exitWith {};
 	
 	if(iscop) then
 	{
@@ -63,7 +63,7 @@ _loadFromDBClient =
 		if(_varName == 'gear_un') then {load_gear = _varValue};
 		if(_varName == 'JailTime') then {player_jailtime = _varValue;};
 	};
-	if(isciv or isesu) then
+	if(isciv) then
 	{
 		if(_varName == 'moneyAccountCiv') then {[player, _varValue] call bank_set_value;};
 		if(_varName == 'WeaponsplayerCiv') then {{player addWeapon _x} forEach _varValue;};
