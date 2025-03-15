@@ -16,7 +16,13 @@ _loadFromDBClient =
 	
 	if(iscop) then
 	{
-		if(_varName == 'moneyAccountWest') then {[player, _varValue] call bank_set_value;};
+		if(_varName == 'moneyAccountWest') then {
+			if(_varValue == 0) then {
+				[player, startmoneh] call bank_set_value;
+			} else {
+				[player, _varValue] call bank_set_value;
+			};
+		};
 		if(_varName == 'WeaponsplayerWest') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerWest') then {{player addMagazine _x} forEach _varValue;};
 		if(_varName == 'LicensesWest') then {INV_LicenseOwner = _varValue;};
@@ -29,7 +35,13 @@ _loadFromDBClient =
 	};
 	if(isopf) then
 	{
-		if(_varName == 'moneyAccountEast') then {[player, _varValue] call bank_set_value;};
+		if(_varName == 'moneyAccountEast') then {
+			if(_varValue == 0) then {
+				[player, startmoneh] call bank_set_value;
+			} else {
+				[player, _varValue] call bank_set_value;
+			};
+		};
 		if(_varName == 'LicensesEast') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryEast') then {[player, _varValue] call player_set_inventory;};
 		if(_varName == 'WeaponsplayerEast') then {{player addWeapon _x} forEach _varValue;};
@@ -44,7 +56,13 @@ _loadFromDBClient =
 	};
 	if(isins) then
 	{
-		if(_varName == 'moneyAccountRes') then {[player, _varValue] call bank_set_value;};
+		if(_varName == 'moneyAccountRes') then {
+			if(_varValue == 0) then {
+				[player, startmoneh] call bank_set_value;
+			} else {
+				[player, _varValue] call bank_set_value;
+			};
+		};
 		if(_varName == 'WeaponsplayerRes') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerRes') then {{player addMagazine _x} forEach _varValue;};
 		if(_varName == 'LicensesRes') then {INV_LicenseOwner = _varValue;};
@@ -57,7 +75,13 @@ _loadFromDBClient =
 	};
 	if(isciv) then
 	{
-		if(_varName == 'moneyAccountCiv') then {[player, _varValue] call bank_set_value;};
+		if(_varName == 'moneyAccountCiv') then {
+			if(_varValue == 0) then {
+				[player, startmoneh] call bank_set_value;
+			} else {
+				[player, _varValue] call bank_set_value;
+			};
+		};
 		if(_varName == 'WeaponsplayerCiv') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerCiv') then {{player addMagazine _x} forEach _varValue;};
 		if(_varName == 'LicensesCiv') then {INV_LicenseOwner = _varValue;};
