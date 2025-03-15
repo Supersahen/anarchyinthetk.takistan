@@ -1,5 +1,5 @@
 [] spawn {
-	private["_uid", "_id"];
+	private["_uid", "_id", "_playtime"];
 	_uid = getPlayerUID player;
 	playerUID = getPlayerUID player;
 	_cid = player;
@@ -28,6 +28,7 @@
 		statsLoaded = 0;
 		stats_loaded = false;
 	};
+	_playTime = ([player] call ftf_getPlayTime) / 60;
 	
 	if(iscop) then
 	{
@@ -81,7 +82,7 @@
 	};
 	
 	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "logins", "NUMBER", _cid] call sendToServer;
-	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], "player_total_playtime", "NUMBER", _cid] call sendToServer;
+	[format ["%1_persistent",_uid], format ["%1_persistent",_uid], _playTime, "NUMBER", _cid] call sendToServer;
 	//END
 	
 	private["_bank_amount"];
