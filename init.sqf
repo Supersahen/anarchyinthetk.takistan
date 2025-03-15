@@ -43,7 +43,7 @@ ExecSQF("Awesome\Functions\vehicle_storage_functions.sqf");
 
 if (isClient) then {
 		[] call stats_client_start_loading;
-		["Loading - Stage 1/5"] call stats_client_update_loading_title;
+		["Loading - Stage 1/14"] call stats_client_update_loading_title;
 		[0] call stats_client_update_loading_progress;
 		
 //		[] execFSM "Awesome\Performance\fpsManagerDynamic.fsm";
@@ -68,33 +68,43 @@ ExecSQF("triggers.sqf");
 
 if (isClient) then {
 		[0.2] call stats_client_update_loading_progress;
-		["Loading - Stage 2/5"] call stats_client_update_loading_title;
+		["Loading - Stage 2/14"] call stats_client_update_loading_title;
 	};
 
 ExecSQF("customfunctions.sqf");
 ExecSQF("strfuncs.sqf");
+["Loading - Stage 3/14"] call stats_client_update_loading_title;
 ExecSQF("1007210.sqf");
 ExecSQF("4422894.sqf");
+["Loading - Stage 4/14"] call stats_client_update_loading_title;
 ExecSQF("miscfunctions.sqf");
 ExecSQF("Awesome\Functions\quicksort.sqf");
+["Loading - Stage 5/14"] call stats_client_update_loading_title;
 ExecSQF("INVvars.sqf");
 ExecSQF("Awesome\Shops\functions.sqf");
+["Loading - Stage 6/14"] call stats_client_update_loading_title;
 ExecSQF("Awesome\Functions\bankfunctions.sqf");
 ExecSQFwait("bankvariables.sqf");
+["Loading - Stage 7/14"] call stats_client_update_loading_title;
 ExecSQF("execlotto.sqf");
 ExecSQF("initWPmissions.sqf");
+["Loading - Stage 8/14"] call stats_client_update_loading_title;
 ExecSQF("gfx.sqf");
 ExecSQF("animList.sqf");
+["Loading - Stage 9/14"] call stats_client_update_loading_title;
 ExecSQF("variables.sqf");
 ExecSQF("Awesome\Functions\money_functions.sqf");
+["Loading - Stage 10/14"] call stats_client_update_loading_title;
 ExecSQF("Awesome\Functions\gang_functions.sqf");
 ExecSQF("Awesome\Functions\convoy_functions.sqf");
+["Loading - Stage 11/14"] call stats_client_update_loading_title;
 ExecSQF("Awesome\Functions\factory_functions.sqf");
 ExecSQFwait("Awesome\MountedSlots\functions.sqf");
+["Loading - Stage 12/14"] call stats_client_update_loading_title;
 
 if (isClient) then {
 		[0.6] call stats_client_update_loading_progress;
-		["Loading - Stage 3/5"] call stats_client_update_loading_title;
+		["Loading - Stage 3/14"] call stats_client_update_loading_title;
 	};
 
 // Starts up Awesome scripts
@@ -102,7 +112,7 @@ ExecSQF("Awesome\init.sqf");
 
 if(isClient) then {
 	[0.8] call stats_client_update_loading_progress;
-	["Loading - Stage 4/5"] call stats_client_update_loading_title;
+	["Loading - Stage 13/14"] call stats_client_update_loading_title;
 	
 	ExecSQFspawn("briefing.sqf");
 	
@@ -122,7 +132,7 @@ if(isClient) then {
 	ExecSQFwait("onKeyPress.sqf")
 	
 	[1] call stats_client_update_loading_progress;
-	["Loading - Stage 5/5"] call stats_client_update_loading_title;
+	["Loading - Stage 14/14"] call stats_client_update_loading_title;
 	[] execVM "RG\cLoad.sqf";
 	[] execvm "mpframework\rise_framework_init.sqf"; 
 	waitUntil {!isNil "rise_framework_initialized"};
