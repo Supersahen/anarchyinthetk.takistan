@@ -17,9 +17,17 @@ bank_set_value = {
 	_player = _this select 0;
 	_value = _this select 1;
 	
-	if (not([_player] call player_human)) exitWith {};
-	if (isNil "_value") exitWith {};
-	if (typeName _value != "SCALAR") exitWith {};
+	diag_log format["bank_set_value called with player: %1, value: %2", _player, _value];
+	
+	if (not([_player] call player_human)) exitWith {
+		diag_log "bank_set_value: player check failed";
+	};
+	if (isNil "_value") exitWith {
+		diag_log "bank_set_value: value is nil";
+	};
+	if (typeName _value != "SCALAR") exitWith {
+		diag_log format["bank_set_value: value is wrong type: %1", typeName _value];
+	};
 	
 	if (_value < 0) then {_value = 0};
 	_value = [_value] call encode_number;

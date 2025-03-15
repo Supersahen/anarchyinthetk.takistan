@@ -90,9 +90,10 @@
 	if (_bank_amount == 0 ) then {
 			diag_log format ["cLoad.sqf"];
 			diag_log "Setting Money to default as no stat loaded";
-			diag_log format ["Money: %1", _bank_amount];
+			diag_log format ["Initial Money: %1", _bank_amount];
 			[player, startmoneh] call bank_set_value;
-			diag_log format ["Money: %1", _bank_amount];
+			_bank_amount = [player] call bank_get_value;
+			diag_log format ["Updated Money: %1", _bank_amount];
 	} else {
 		diag_log "Money loaded succesfully";
 		diag_log format ["Money: %1", _bank_amount]
@@ -109,7 +110,62 @@
 	_message = format ["%1 logged into the server. They have logged in %2 times",name player,player_logins];
 	[_message,"Login"] call mp_log;
 	
-	
+	if (isNil "accountToClient") then { accountToClient = []; };
+
+	"accountToClient" addPublicVariableEventHandler {
+		_array = _this select 1;
+		if (isNil "_array" || typeName _array != "ARRAY" || count _array < 3) exitWith {
+			diag_log format["Client Load Error: Invalid data received: %1", _array];
+		};
+		
+		_uid = _array select 0;
+		_varName = _array select 1;
+		_varValue = _array select 2;
+		
+		if (isNil "_uid" || isNil "_varName" || isNil "_varValue") exitWith {
+			diag_log format["Client Load Error: Missing required data: uid=%1, varName=%2, value=%3", _uid, _varName, _varValue];
+		};
+		
+		if (_uid != getPlayerUID player) exitWith {
+			diag_log format["Client Load Error: UID mismatch. Expected %1, got %2", getPlayerUID player, _uid];
+		};
+		
+		diag_log format["Client Load: Setting %1 to %2 for player %3", _varName, _varValue, name player];
+		
+		switch (_varName) do {
+			case "moneyAccountWest": {
+				if (isNil "_varValue" || _varValue < 0) then {
+					_varValue = startmoneh;
+					diag_log format["Client Load: Using default money %1 for West", _varValue];
+				};
+				[player, _varValue] call bank_set_value;
+			};
+			case "moneyAccountEast": {
+				if (isNil "_varValue" || _varValue < 0) then {
+					_varValue = startmoneh;
+					diag_log format["Client Load: Using default money %1 for East", _varValue];
+				};
+				[player, _varValue] call bank_set_value;
+			};
+			case "moneyAccountRes": {
+				if (isNil "_varValue" || _varValue < 0) then {
+					_varValue = startmoneh;
+					diag_log format["Client Load: Using default money %1 for Resistance", _varValue];
+				};
+				[player, _varValue] call bank_set_value;
+			};
+			case "moneyAccountCiv": {
+				if (isNil "_varValue" || _varValue < 0) then {
+					_varValue = startmoneh;
+					diag_log format["Client Load: Using default money %1 for Civilian", _varValue];
+				};
+				[player, _varValue] call bank_set_value;
+			};
+			default {
+				diag_log format["Client Load Warning: Unhandled variable %1", _varName];
+			};
+		};
+	};
 };
 
 
