@@ -19,16 +19,12 @@ _loadFromDBClient =
 		if(_varName == 'moneyAccountWest') then {[player, _varValue] call bank_set_value;};
 		if(_varName == 'WeaponsplayerWest') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerWest') then {{player addMagazine _x} forEach _varValue;};
-		if(_varName == 'backpack_west') then {[player,_varValue] call player_set_backpack_gear};
 		if(_varName == 'LicensesWest') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryWest') then {[player, _varValue] call player_set_inventory;};
 		if(_varName == 'privateStorageWest') then {[player,'private_storage', _varValue] call player_set_array;};
 		if(_varName == 'FactoryWest') then {INV_Fabrikowner = _varValue;};
-		if(_varName == 'HolsterSMG_West') then {player addWeapon _varValue};
-		if(_varName == 'HolsterPistol_West') then {player addWeapon _varValue};
 		if(_varName == 'rank_west') then {player setVariable ['faction_rank',_varValue,true]; player_rank = _varValue};
 		if(_varName == 'JailTime') then {player_jailtime = _varValue;};
-		if(_varName == 'police_agreement') then {call compile format ['police_agreement = %1',_varValue];};
 
 	};
 	if(isopf) then
@@ -51,15 +47,11 @@ _loadFromDBClient =
 		if(_varName == 'moneyAccountRes') then {[player, _varValue] call bank_set_value;};
 		if(_varName == 'WeaponsplayerRes') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerRes') then {{player addMagazine _x} forEach _varValue;};
-		if(_varName == 'backpack_un') then {[player,_varValue] call player_set_backpack_gear};
 		if(_varName == 'LicensesRes') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryRes') then {[player, _varValue] call player_set_inventory;};
 		if(_varName == 'privateStorageRes') then {[player, 'private_storage', _varValue] call player_set_array;};
 		if(_varName == 'FactoryRes') then {INV_Fabrikowner = _varValue;};
-		if(_varName == 'HolsterSMG_Res') then {INV_InventarSmg = _varValue;};
-		if(_varName == 'HolsterPistol_Res') then {INV_InventarPistol = _varValue;};
 		if(_varName == 'lineIncrement') then {player setVariable ['lineNumber',_varValue,true];};
-		if(_varName == 'rank_un') then {player setVariable ['faction_rank',_varValue,true]; player_rank = _varValue};
 		if(_varName == 'gear_un') then {load_gear = _varValue};
 		if(_varName == 'JailTime') then {player_jailtime = _varValue;};
 	};
@@ -68,7 +60,6 @@ _loadFromDBClient =
 		if(_varName == 'moneyAccountCiv') then {[player, _varValue] call bank_set_value;};
 		if(_varName == 'WeaponsplayerCiv') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerCiv') then {{player addMagazine _x} forEach _varValue;};
-		if(_varName == 'backpack_civ') then {[player,_varValue] call player_set_backpack_gear};
 		if(_varName == 'LicensesCiv') then {INV_LicenseOwner = _varValue;};
 		if(_varName == 'InventoryCiv') then {[player, _varValue] call player_set_inventory;};
 	    if(_varName == 'privateStorageCiv') then {[player, 'private_storage', _varValue] call player_set_array;};
@@ -77,10 +68,7 @@ _loadFromDBClient =
 		if(_varName == 'Fabrikablage3_storage') then {[player,'Fabrikablage3', _varValue] call player_set_array;};
 		if(_varName == 'Fabrikablage4_storage') then {[player,'Fabrikablage4', _varValue] call player_set_array;};
 		if(_varName == 'FactoryCiv') then {INV_Fabrikowner = _varValue;};
-		if(_varName == 'HolsterSMG_Civ') then {INV_InventarSmg = _varValue;};
-		if(_varName == 'HolsterPistol_Civ') then {INV_InventarPistol = _varValue;};
 		if(_varName == 'JailTime') then {player_jailtime = _varValue;};
-		if(_varName == 'rank_esu') then {player setVariable ['faction_rank',_varValue,true]; player_rank = _varValue};
 		
 		
 	};
