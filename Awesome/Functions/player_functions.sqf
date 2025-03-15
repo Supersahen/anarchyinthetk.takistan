@@ -106,6 +106,7 @@ player_add_licenses = {
 		if (typeName _license != "STRING") exitWith {};
 		if (_license in _current_licenses) exitWith {};
 		_current_licenses = _current_licenses + [_license];
+		INV_LicenseOwner = INV_LicenseOwner + [_license];
 	}} forEach _licenses;
 	
 	[_player, "INV_LicenseOwner", _current_licenses] call player_set_array;

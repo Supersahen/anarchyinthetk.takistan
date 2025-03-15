@@ -39,3 +39,4 @@ INV_Licenses =
     ];
 	
 INV_Licenses_PMC = ["pmc_license_journeyman", "pmc_license_defense", "pmc_license_air"];
+["INV_LicenseOwner", []] call stats_init_variable;
