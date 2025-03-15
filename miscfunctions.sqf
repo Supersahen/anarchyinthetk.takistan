@@ -465,8 +465,8 @@ findTurrets_Recurse = {
 };
 
 [] call buildings_protect;
-
-if(isClient) then {	
+if(isClient) then 
+{	
 	execVM "RG\SaveVar.sqf";
 	waitUntil {!isNil "fn_SaveToServer"};
 	execVM "RG\sLoad.sqf";
