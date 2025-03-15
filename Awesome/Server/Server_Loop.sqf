@@ -78,14 +78,14 @@ if ((isNil "A_AI_ARRAY")) then {
 	
 	private["_file", "_fileLoad"];
 	
-	_file = "server\loop.sqf";
+	/* _file = "server\loop.sqf";
 	
 	if (_file != "") then {
 		_fileLoad = preProcessFileLineNumbers _file;
 		if (_fileLoad != "") then {
 			[] spawn (compile _fileLoad);
 		};
-	};
+	}; */
 };
 
 private["_sleep", "_counter", "_time", "_time_wait", "_wait"];

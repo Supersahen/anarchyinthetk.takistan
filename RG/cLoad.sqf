@@ -87,7 +87,7 @@
 	private["_bank_amount"];
 	_bank_amount = [_cid] call bank_get_value;
 	if (_bank_amount == 0 ) then {
-			diag_log format ["sLoad.sqf"]
+			diag_log format ["cLoad.sqf"];
 			diag_log "Setting Money to default as no stat loaded";
 			diag_log format ["Money: %1", _bank_amount];
 			[player, startmoneh] call bank_set_value;
