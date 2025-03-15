@@ -93,7 +93,7 @@ ExecSQF("Awesome\Functions\quicksort.sqf");
 ["Loading - Stage 5/17"] call stats_client_update_loading_title;
 ExecSQF("INVvars.sqf");
 ExecSQF("Awesome\Shops\functions.sqf");
-["Loading - Stage 6/14 (This one takes a while)"] call stats_client_update_loading_title;
+["Loading - Stage 6/17 (This one takes a while)"] call stats_client_update_loading_title;
 ExecSQF("Awesome\Functions\bankfunctions.sqf");
 ExecSQFwait("bankvariables.sqf");
 ["Loading - Stage 7/17"] call stats_client_update_loading_title;
