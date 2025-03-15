@@ -27,6 +27,8 @@ if (_delayA > _delayR) then {
 };
 		
 _EML = if (_delayA > _delayR)then{_delayA}else{_delayR};
+
+["all"] call RG_fnc_iSave;
 		
 while { _EML > 0 } do {
 		if (isnull (findDisplay 49)) exitWith {};
