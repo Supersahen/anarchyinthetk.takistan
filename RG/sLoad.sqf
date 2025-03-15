@@ -1,3 +1,31 @@
+/*
+ * sLoad.sqf - Server Load functionality
+ * 
+ * This script handles loading player stats from the database to the client.
+ * It works in conjunction with cLoad.sqf (client load) and SaveVar.sqf.
+ * 
+ * The loading process:
+ * 1. Client requests stats via cLoad.sqf using sendToServer function
+ * 2. Server receives request via accountToServerLoad variable
+ * 3. Server loads data from database using iniDB
+ * 4. Server sends data back to client via accountToClient variable
+ * 5. This script (sLoad.sqf) receives the data and processes it
+ * 
+ * For each faction (cop, opf, ins, civ) it loads:
+ * - Money account
+ * - Weapons and magazines
+ * - Licenses
+ * - Inventory (with proper encoding of amounts)
+ * - Private storage
+ * - Factory ownership
+ * 
+ * The script includes helper functions:
+ * - _handle_inventory: Formats and validates inventory data
+ * - _handle_storage: Formats and validates storage data
+ * 
+ * All operations are logged for debugging purposes.
+ */
+
 //===========================================================================
 _loadFromDBClient =
 "
@@ -14,7 +42,6 @@ _loadFromDBClient =
 
 	if (isNil 'iscop' or isNil 'isopf' or isNil 'isins' or isNil 'isciv') exitWith {};
 	
-	// Function to handle inventory setting
 	_handle_inventory = {
 		private['_value'];
 		_value = _this;
@@ -38,7 +65,6 @@ _loadFromDBClient =
 		};
 	};
 
-	// Function to handle storage setting
 	_handle_storage = {
 		private['_value', '_storage_name'];
 		_value = _this select 0;
