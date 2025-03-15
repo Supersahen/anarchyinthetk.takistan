@@ -95,5 +95,18 @@ sendToServer = compile _sendToServer;
 };
 //===========================================================================
 
+	private["_bank_amount"];
+	_bank_amount = [player] call bank_get_value;
+	if (_bank_amount == 0 ) then {
+			diag_log format ["sLoad.sqf"]
+			diag_log "Setting Money to default as no stat loaded";
+			diag_log format ["Money:", _bank_amount];
+			[player, startmoneh] call bank_set_value;
+			diag_log format ["Money:", _bank_amount];
+	} else {
+		diag_log "Money loaded succesfully";
+		diag_log format ["Money:", _bank_amount]
+	};
+	
 
 statFunctionsLoaded = 1;
