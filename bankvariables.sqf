@@ -1,4 +1,4 @@
-startmoneh					= if(debug)then{1000000000}else{50000};
+startmoneh					= 50000;
 donatormoneh				= startmoneh * 5; //(250k)
 silvermoneh					= donatormoneh * 2; //(500k)
 goldmoneh					= donatormoneh * 3; //(750k)

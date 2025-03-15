@@ -3359,17 +3359,6 @@ player_resrain_disconnect = {
 //	[] call player_save_side_gear_setup;
 //	[] call player_init_arrays;
 
-debug = {
-	_var = _this select 0;
-	_string = _this select 1;
-	
-	if (isNil "_var") exitWith {};
-	if (isNil "_string") then {
-		systemChat format ["TYPE: %1 : VALUE: %2",typeName _var,_var];
-	} else {
-		systemChat format ["NAME: %1 TYPE: %2 : VALUE: %3",_string,typeName _var,_var];
-	};
-};
 
 mp_log = {
 

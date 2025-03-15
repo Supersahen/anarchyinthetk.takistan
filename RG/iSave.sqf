@@ -209,8 +209,6 @@ RG_fnc_iSave = {
 			[format ["%1_persistent",getPlayerUID player], format ["%1_persistent",getPlayerUID player], "rank_esu", player_rank] call sendToServer;
 		};
 	};
-	[getPlayerUID player, getPlayerUID player, "shares", [] call stocks_save ] call fn_SaveToServer;
-	[format ["%1_persistent",getPlayerUID player],format ["%1_persistent",getPlayerUID player], "player_total_playtime", player_total_playtime] call fn_SaveToServer;
 };
 
 publicVariable "RG_fnc_iSave";

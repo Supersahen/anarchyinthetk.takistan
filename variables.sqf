@@ -208,7 +208,6 @@ convoyrespawntime       = 30;  //reset to 30 after testing
 maxstationmoney         = 35000;
 wantedamountforrobbing  = 25000;
 
-if(debug)then{drugstockinc = 6;druguserate = 20};
 //==============================PETROL/OIL=========================================
 fuel_max_reserve        = 10000; //(how many liters in reserve)
 fuel_per_barrel         = 100; //(how many liters in 1 barrel)

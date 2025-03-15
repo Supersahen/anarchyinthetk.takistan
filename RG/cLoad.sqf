@@ -106,7 +106,7 @@
 	_bank_amount = [_cid] call bank_get_value;
 	if (_bank_amount == 0 ) then {
 			diag_log "Setting Money to default as no stat loaded";
-			[player, 100000] call bank_set_value;
+			[player, startmoneh] call bank_set_value;
 	};
 	
 	statsLoaded = 1;
