@@ -96,8 +96,6 @@ _loadFromDBClient =
 		
 		
 	};
-	
-	if(_varName == 'shares') then {[_varValue] call stocks_load};
 	if(_varName == 'logins') then {player_logins = _varValue};
 	if(_varName == 'player_total_playtime') then {player_total_playtime = _varValue};
 	if(_varName == 'online_during_hacker') then {online_during_hacker = _varValue};

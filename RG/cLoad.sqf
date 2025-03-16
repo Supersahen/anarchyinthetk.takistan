@@ -7,7 +7,6 @@
 	// Initialize variables with default values
 	if (isNil "player_logins") then {player_logins = 0};
 	if (isNil "player_total_playtime") then {player_total_playtime = 0};
-	if (isNil "police_agreement") then {police_agreement = false};
 	
 	// Initialize sendToServer function if not defined
 	if (isNil "sendToServer") then {
@@ -88,15 +87,12 @@
 	private["_bank_amount"];
 	_bank_amount = [_cid] call bank_get_value;
 	if (_bank_amount == 0 ) then {
-			diag_log format ["cLoad.sqf"];
-			diag_log "Setting Money to default as no stat loaded";
-			diag_log format ["Initial Money: %1", _bank_amount];
+			diag_log format ["Setting Money to default as no stat loaded - Initial Money: %1", _bank_amount];
 			[player, startmoneh] call bank_set_value;
 			_bank_amount = [player] call bank_get_value;
 			diag_log format ["Updated Money: %1", _bank_amount];
 	} else {
-		diag_log "Money loaded succesfully";
-		diag_log format ["Money: %1", _bank_amount]
+		diag_log format ["Money loaded succesfully: %1", _bank_amount]
 	};
 	
 	statsLoaded = 1;
