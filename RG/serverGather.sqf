@@ -60,7 +60,6 @@ _loadFromDB =
 		};
 	};
 	
-	// Ensure money values are properly formatted
 	if (_type == 'NUMBER' && _varName in ['moneyAccountWest', 'moneyAccountEast', 'moneyAccountRes', 'moneyAccountCiv']) then {
 		_result = parseNumber str _result;
 		diag_log format['iniDB: Sending money value %1 for %2', _result, _varName];
