@@ -147,21 +147,113 @@
 			case "moneyAccountCiv": {
 				if (isNil "_varValue" || _varValue == 0) then {
 					_varValue = startmoneh;
-					diag_log format["Client Load: Using default money %1 for %2", _varValue, _varName];
+					diag_log format["Client Load: Using default money %1", _varValue];
 				};
 				diag_log format["Client Load: Setting money value to %1", _varValue];
 				[player, parseNumber str _varValue] call bank_set_value;
 			};
-			default {
-				// Handle other variables like inventory, weapons, etc.
-				if (_varName in ["WeaponsPlayerCiv", "MagazinesPlayerCiv", "LicensesCiv", "InventoryCiv", 
-								"privateStorageCiv", "FactoryCiv", "Fabrikablage1_storage", 
-								"AircraftFactory1_storage", "Fabrikablage3_storage", "Fabrikablage4_storage"]) then {
-					// These are expected array variables, no need to warn
-					diag_log format["Client Load: Setting %1 array data", _varName];
+			
+			case "WeaponsPlayerWest";
+			case "WeaponsPlayerEast";
+			case "WeaponsPlayerRes";
+			case "WeaponsPlayerCiv": {
+				removeAllWeapons player;
+				{
+					player addWeapon _x;
+					diag_log format["Client Load: Added weapon %1", _x];
+				} forEach _varValue;
+			};
+			
+			case "MagazinesPlayerWest";
+			case "MagazinesPlayerEast";
+			case "MagazinesPlayerRes";
+			case "MagazinesPlayerCiv": {
+				// Clear existing magazines one by one
+				{
+					player removeMagazine _x;
+				} forEach (magazines player);
+				
+				// Add new magazines
+				if (!isNil "_varValue" && typeName _varValue == "ARRAY") then {
+					{
+						if (!isNil "_x" && typeName _x == "STRING") then {
+							player addMagazine _x;
+							diag_log format["Client Load: Added magazine %1", _x];
+						};
+					} forEach _varValue;
+					
+					// Verify magazines were actually added
+					private "_loadedMags";
+					_loadedMags = magazines player;
+					diag_log format["Client Load: Final magazine count: %1", count _loadedMags];
+					diag_log format["Client Load: Final magazines: %1", _loadedMags];
 				} else {
-					diag_log format["Client Load Warning: Unhandled variable %1", _varName];
+					diag_log format["Client Load Error: Invalid magazine data: %1", _varValue];
 				};
+			};
+			
+			case "LicensesWest";
+			case "LicensesEast";
+			case "LicensesRes";
+			case "LicensesCiv": {
+				INV_LicenseOwner = _varValue;
+				diag_log format["Client Load: Set INV_LicenseOwner to %1", _varValue];
+			};
+			
+			case "InventoryWest";
+			case "InventoryEast";
+			case "InventoryRes";
+			case "InventoryCiv": {
+				[player, _varValue] call player_set_inventory;
+				diag_log format["Client Load: Set inventory to %1", _varValue];
+			};
+			
+			case "privateStorageWest";
+			case "privateStorageEast";
+			case "privateStorageRes";
+			case "privateStorageCiv": {
+				[player, "private_storage", _varValue] call player_set_array;
+				diag_log format["Client Load: Set private storage to %1", _varValue];
+			};
+			
+			case "FactoryWest";
+			case "FactoryEast";
+			case "FactoryRes";
+			case "FactoryCiv": {
+				INV_Fabrikowner = _varValue;
+				diag_log format["Client Load: Set factory ownership to %1", _varValue];
+			};
+			
+			case "Fabrikablage1_storage";
+			case "AircraftFactory1_storage";
+			case "Fabrikablage3_storage";
+			case "Fabrikablage4_storage": {
+				private "_storageName";
+				_storageName = switch (_varName) do {
+					case "Fabrikablage1_storage": {"Fabrikablage1"};
+					case "AircraftFactory1_storage": {"AircraftFactory1"};
+					case "Fabrikablage3_storage": {"Fabrikablage3"};
+					case "Fabrikablage4_storage": {"Fabrikablage4"};
+					default {""}
+				};
+				if (_storageName != "") then {
+					[player, _storageName, _varValue] call player_set_array;
+					diag_log format["Client Load: Set %1 to %2", _storageName, _varValue];
+				};
+			};
+			
+			case "JailTime": {
+				player_jailtime = _varValue;
+				diag_log format["Client Load: Set jail time to %1", _varValue];
+			};
+			
+			case "logins": {
+				player_logins = _varValue;
+				diag_log format["Client Load: Set login count to %1", _varValue];
+			};
+			
+			default {
+				diag_log format["Client Load Warning: Unhandled variable %1", _varName];
 			};
 		};
 	};
