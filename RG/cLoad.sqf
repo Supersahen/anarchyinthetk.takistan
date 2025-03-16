@@ -196,8 +196,24 @@
 			case "LicensesEast";
 			case "LicensesRes";
 			case "LicensesCiv": {
-				INV_LicenseOwner = _varValue;
-				diag_log format["Client Load: Set INV_LicenseOwner to %1", _varValue];
+				if (!isNil "_varValue" && typeName _varValue == "ARRAY") then {
+					private "_oldLicenses";
+					_oldLicenses = [player, "INV_LicenseOwner"] call player_get_array;
+					
+					[player, "INV_LicenseOwner", _varValue] call player_set_array;
+					diag_log format["Client Load: Setting licenses from %1 to %2", _oldLicenses, _varValue];
+					
+					// Verify licenses were set correctly
+					private "_newLicenses";
+					_newLicenses = [player, "INV_LicenseOwner"] call player_get_array;
+					if (str _newLicenses != str _varValue) then {
+						diag_log format["Client Load Error: License verification failed. Expected %1, got %2", _varValue, _newLicenses];
+					} else {
+						diag_log format["Client Load: Licenses set successfully to %1", _newLicenses];
+					};
+				} else {
+					diag_log format["Client Load Error: Invalid license data: %1", _varValue];
+				};
 			};
 			
 			case "InventoryWest";
