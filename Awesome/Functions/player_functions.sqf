@@ -1622,11 +1622,10 @@ player_set_gear = {
 };
 
 player_reset_gear = {
-	diag_log format ["Player_reset_gear called, Magazines: %1, Count: %2", magazines player, count (magazines player)];
-	
 	private["_player"];
 	_player = _this select 0;
 	if (not([_player] call player_exists)) exitWith {};
+	diag_log format ["Player_reset_gear called, Magazines: %1, Count: %2", magazines _player, count (magazines _player)];
 	
 	{player removeMagazine _x} forEach (magazines player);
 	removeAllWeapons _player;
@@ -2714,8 +2713,6 @@ player_continuity = {
 	// Donator
 	[_player] call player_donator_setup;
 	
-	//[_player] call player_reset_gear;
-	
 	ExecSQF("Awesome\EH\init.sqf");
 	ExecSQF("Awesome\Functions\FA_functions.sqf");
 	[_player] call A_fnc_EH_init;
@@ -2851,10 +2848,6 @@ player_spawn = {
 	
 	waitUntil { alive _player };
 	_player setUnconscious false;
-	
-	if (!(_first_time)) then {
-		[_player] call player_reset_gear;
-	};
 	
 	if (_first_time) then {
 		[_player] call player_intro_text;

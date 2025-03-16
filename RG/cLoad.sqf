@@ -174,15 +174,13 @@
 					{
 						if (!isNil "_x" && typeName _x == "STRING") then {
 							player addMagazine _x;
-							diag_log format["Client Load: Added magazine %1", _x];
 						};
 					} forEach _varValue;
 					
 					// Verify magazines were actually added
 					private "_loadedMags";
 					_loadedMags = magazines player;
-					diag_log format["Client Load: Final magazine count: %1", count _loadedMags];
-					diag_log format["Client Load: Final magazines: %1", _loadedMags];
+					diag_log format["Client Load: Added magazines: %1", _loadedMags];
 				} else {
 					diag_log format["Client Load Error: Invalid magazine data: %1", _varValue];
 				};
