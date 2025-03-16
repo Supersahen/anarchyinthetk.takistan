@@ -8,6 +8,11 @@ RG_fnc_iSave = {
 	if (isNil "_this" || typeName _this != "STRING") exitWith {};
 	_varName = _this;
 
+	// Add notification for stats saving
+	if (_varName == "all") then {
+		systemChat "[STATS SAVED]";
+	};
+
 	if(playerSide == west) then
 	{
 		if (_varName == "money") then {
