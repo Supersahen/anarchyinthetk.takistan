@@ -25,7 +25,7 @@ _loadFromDBClient =
 		};
 		if(_varName == 'WeaponsplayerWest') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerWest') then {{player addMagazine _x} forEach _varValue;};
-		if(_varName == 'LicensesWest') then {INV_LicenseOwner = _varValue;};
+		if(_varName == 'LicensesWest') then {[player, INV_LicenseOwner, _varValue] call player_set_array;};
 		if(_varName == 'InventoryWest') then {[player, _varValue] call player_set_inventory;};
 		if(_varName == 'privateStorageWest') then {[player,'private_storage', _varValue] call player_set_array;};
 		if(_varName == 'FactoryWest') then {INV_Fabrikowner = _varValue;};
@@ -42,7 +42,7 @@ _loadFromDBClient =
 				[player, _varValue] call bank_set_value;
 			};
 		};
-		if(_varName == 'LicensesEast') then {INV_LicenseOwner = _varValue;};
+		if(_varName == 'LicensesEast') then {[player, INV_LicenseOwner, _varValue] call player_set_array;};
 		if(_varName == 'InventoryEast') then {[player, _varValue] call player_set_inventory;};
 		if(_varName == 'WeaponsplayerEast') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerEast') then {{player addMagazine _x} forEach _varValue;};
@@ -65,7 +65,7 @@ _loadFromDBClient =
 		};
 		if(_varName == 'WeaponsplayerRes') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerRes') then {{player addMagazine _x} forEach _varValue;};
-		if(_varName == 'LicensesRes') then {INV_LicenseOwner = _varValue;};
+		if(_varName == 'LicensesRes') then {[player, INV_LicenseOwner, _varValue] call player_set_array;};
 		if(_varName == 'InventoryRes') then {[player, _varValue] call player_set_inventory;};
 		if(_varName == 'privateStorageRes') then {[player, 'private_storage', _varValue] call player_set_array;};
 		if(_varName == 'FactoryRes') then {INV_Fabrikowner = _varValue;};
@@ -84,7 +84,7 @@ _loadFromDBClient =
 		};
 		if(_varName == 'WeaponsplayerCiv') then {{player addWeapon _x} forEach _varValue;};
 		if(_varName == 'MagazinesplayerCiv') then {{player addMagazine _x} forEach _varValue;};
-		if(_varName == 'LicensesCiv') then {INV_LicenseOwner = _varValue;};
+		if(_varName == 'LicensesCiv') then {[player, INV_LicenseOwner, _varValue] call player_set_array;};
 		if(_varName == 'InventoryCiv') then {[player, _varValue] call player_set_inventory;};
 	    if(_varName == 'privateStorageCiv') then {[player, 'private_storage', _varValue] call player_set_array;};
 		if(_varName == 'Fabrikablage1_storage') then {[player,'Fabrikablage1', _varValue] call player_set_array;};

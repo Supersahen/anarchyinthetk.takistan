@@ -1622,7 +1622,7 @@ player_set_gear = {
 };
 
 player_reset_gear = {
-	//player groupChat format["player_reset_gear %1", _this];
+	diag_log format ["Player_reset_gear called, Magazines: %1, Count: %2", magazines player, count (magazines player)];
 	
 	private["_player"];
 	_player = _this select 0;
@@ -1640,30 +1640,12 @@ player_load_side_gear = {
 	_player = _this select 0;
 	if (not([_player] call player_human)) exitWith {};
 
-	[_player] call player_reset_gear;
 	private["_side"];
 	_side = ([_player] call player_side);
 	_side = toLower(str(_side));
 	
-	private["_weapons", "_magazines", "_backpack", "_backpack_weapons", "_backpack_magazines"];
+	private["_weapons", "_magazines", "_backpack", "_backpack_weapons", "_backpack_magazines","_gear","_primary_weapon"];
 	
-	_weapons = [_player, format["weapons_%1", _side]] call player_get_array;
-	_magazines = [_player, format["magazines_%1", _side]] call player_get_array;
-	_backpack = [_player, format["backpack_%1", _side]] call player_get_string;
-	_backpack_weapons = [_player, format["backpack_weapons_%1", _side]] call player_get_array;
-	_backpack_magazines = [_player, format["backpack_magazines_%1", _side]] call player_get_array;
-	
-	private["_gear"];
-	_gear = [];
-	_gear set [player_gear_weapons, _weapons];
-	_gear set [player_gear_magazines, _magazines];
-	_gear set [player_gear_backpack, _backpack];
-	_gear set [player_gear_backpack_weapons, _backpack_weapons];
-	_gear set [player_gear_backpack_magazines, _backpack_magazines];
-	
-	[_player, _gear] call player_set_gear;
-	
-	private["_primary_weapon"];
 	_primary_weapon = (primaryweapon player);
 	
 	if (_primary_weapon != "") then {
@@ -2732,7 +2714,7 @@ player_continuity = {
 	// Donator
 	[_player] call player_donator_setup;
 	
-	[_player] call player_reset_gear;
+	//[_player] call player_reset_gear;
 	
 	ExecSQF("Awesome\EH\init.sqf");
 	ExecSQF("Awesome\Functions\FA_functions.sqf");

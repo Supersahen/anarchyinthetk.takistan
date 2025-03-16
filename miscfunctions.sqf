@@ -464,6 +464,14 @@ findTurrets_Recurse = {
 	_result
 };
 
+// Only initialize if not already set by stats loading
+if (isNil "INV_LicenseOwner") then {
+    INV_LicenseOwner = [];
+    diag_log "License array initialized as empty - waiting for stats";
+} else {
+    diag_log format["Preserving existing licenses: %1", INV_LicenseOwner];
+};
+
 [] call buildings_protect;
 if(isClient) then 
 {	
